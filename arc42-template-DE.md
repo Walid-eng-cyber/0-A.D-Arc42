@@ -438,7 +438,44 @@ Ein-/Ausgaben abbildet.
   Lädt beim Start die Basisdaten und zusätzliche Mods aus getrennten Verzeichnissen und überlagert sie nach Priorität.
 
 
-  
+## 4.3 Spielstrategie / Integration  
+
+Die Architektur von 0 A.D. folgt einer klaren Spielstrategie, die auf einem **deterministischen Simulationsmodell** und einer **datengetriebenen Trennung von  Engine und Spielinhalt** basiert.
+
+Das System arbeitet in einem **kontinuerlichen Game Loop**, in dem Eingaber verarbeitet, Spielzustände aktualisiert und anschließend visualisiert werden.
+
+- **1. Eingabe und Steuerung**
+
+  - Spielerinteraktion über Tastatur und Maus werden vom input-System erfasst und in Befehle übersetzt.
+  - In Single-Player mode werder Befehle direkt an  die Simulation gesendet, im Multiplayer mode werden sie zwischen allen Peers synschronisiert.
+
+- **2. Simulation und Logik**
+
+  - Die deterministische Simulation verarbeitet alle Befehle im nächsten Tick.
+
+  - Das Entity-Component-System aktualisiert Positionen, Zustände, Ressourcen und Einheitenverhalten.
+
+  - Skripte in JavaScript steuern KI, Wirtschaft und Kampflogik.
+
+- **3. Rendering und Audio**
+
+  - Nach der Simulation werden die aktualisierten Spielobjekte vom Rendering-System (OpenGL) dargestellt.
+
+  - Das Audiosystem (OpenAL) spielt passende Geräusche und Musik ab.
+
+- **4. Multiplayer-Synchronisation**
+
+  - Alle Spieler führen dieselbe Simulation aus; nur Befehle werden über das Netzwerk ausgetauscht (Lockstep-Modell).
+
+  - Dies garantiert identische Ergebnisse auf allen Rechnern.
+
+- **5. Modulare Datenfluss**
+
+  - Inhalte (Units, Gebäude, Karten) werden beim Start aus XML- und Skriptdateien geladen.
+
+  - Das Mod-System kann zusätzliche Daten überlagern und zur Laufzeit erweitern.
+
+
 
 # Bausteinsicht {#section-building-block-view}
 
