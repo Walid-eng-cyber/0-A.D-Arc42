@@ -476,6 +476,60 @@ Das System arbeitet in einem **kontinuerlichen Game Loop**, in dem Eingaber vera
   - Das Mod-System kann zusätzliche Daten überlagern und zur Laufzeit erweitern.
 
 
+## 4.4 Integration 
+
+0 A.D. verbindet seine internen Systeme mit der Außenwelt über drei zentrale Schnittstellen: das Betriebssystem, das Mehrspieler-Netzwerk und das dateibasierte Daten- und Mod-System.
+Die Spiel-Engine interagiert mit der Host-Plattform über plattformunabhängige Bibliotheken wie **SDL**, **OpenGL** und **OpenAL**, welche Eingabe, Darstellung und Audio einheitlich und betriebssystemübergreifend verarbeiten.
+Für die Mehrspielerkommunikation verwendet 0 A.D. die **ENet( ***ENet ist eine kleine, schnelle und Open-Source-Netzwerkbibliothek, die in C geschrieben wurde und eine zuverlässige Kommunikation über das UDP-Protokoll ermöglicht***)**-Netzwerkbibliothek, um Spielerbefehle zwischen den Teilnehmern im **Lockstep-Synchronisationsmodell** auszutauschen. Dieser Ansatz reduziert die Netzwerklast und stellt sicher, dass bei allen Clients identische Simulationsergebnisse entstehen.
+Alle Spieldaten und von der Community erstellten Erweiterungen werden über ein modulares Dateisystem verwaltet. Der **Mod-Loader** kombiniert beim Start des Spiels die Basisdaten dynamisch mit benutzerdefinierten Inhalten und Skripten, sodass neue Zivilisationen, Karten oder Spielmechaniken integriert werden können, ohne den Engine-Code zu verändern.
+
+Durch diese Architektur besitzt 0 A.D. klar definierte Schnittstellen zum Betriebssystem, zum Netzwerk und zu benutzererstellten Inhalten. Dadurch bleibt der Kern der Engine unabhängig, stabil und leicht erweiterbar.
+
+
+
+
+
+
+
+
+<br> 
+<br> 
+<br>
+ 
+***High-level Integration Overview***
+
+```
+
+        +-------------------------+
+        |     Player (User)       |
+        |  Mouse / Keyboard Input |
+        +-----------+-------------+
+                    |
+                    v
+        +-----------+-----------+
+        |       0 A.D. Engine    |
+        |------------------------|
+        |   Input Manager        |
+        |   Simulation Core      |
+        |   Rendering / Audio    |
+        +-----------+------------+
+                    |
+   +----------------+----------------+
+   |                                 |
+   v                                 v
++----------+                  +-------------+
+|  Network | <--- Commands --->| Other Peers |
+| (ENet)   |                  |   (Players)  |
++----------+                  +-------------+
+                    |
+                    v
+             +--------------+
+             |  Mod / Data   |
+             |  File System  |
+             +--------------+
+
+```
+
 
 # Bausteinsicht {#section-building-block-view}
 
