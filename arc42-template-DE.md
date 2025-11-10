@@ -407,8 +407,38 @@ Ein-/Ausgaben abbildet.
 | **Sicherheit und Stabilität**                                | • Sandboxed Scripting über JavaScript-Engine<br>• Versionskontrolle und Community-Überprüfung von Beiträge<br>• Deterministische Netzwerkarchitektur reduziert Cheating-Risiken                                                                    |
 
 
+## 4.2. Aufbau 
+
+0 A.D ist als plattformuabhängige (cross-platform) C++/JavaScript-Anwendung realisiert.Es zerfällt grob in folgende Teile:
+
+- **1. Game-/Simulation-Engine**
+  
+  Verantwortlich für Spielschleife, deteminitische Simulation, Entity-Component-System (ECS), Pathfinding, Kampf- und Wirtschaftlogik.
+
+- **2. Rendering und Audio Subsysteme**
+  
+  Zuständig für Darstellung der Spielwelt (Terrain, Einheiten, Effekte) sowie Wirdergabe von Sound und Musik, über plattformunabhängige Bibliotheken (z.B. OpenGL, OpenAL).
+
+- **3. Daten und Content Layer**
+
+  Beschreibt alles Spielinhalte (z.B. Einheiten, Gebäude, Karten, Items, etc.) in XML/JSON-Dateien sowie skriptbare Spiellogik in JavaScript, dient zugleicht als Grundlage für Modding.
+
+- **4. Multiplayer / Networking Module**
+
+  Implementiert  die deterministische, befehlsbasierte Synchronisation zwichen mehreren Spielern (Lockstep-Modell = alle Spieler führen die gleiche Simulation aus) sowie Replay-/Desync-Unterstützung.
+
+- **5.  Graphical User Interface (GUI)**
 
 
+    Menüsystem, Ingame-HUD, Auswahl und Befehlsoberfläche.
+    Die GUI interagiert über Skripte mut der Engine und präsentiert dem Spieler Daten.
+
+- **6.Mod-/Ressourcen-Loader**
+
+  Lädt beim Start die Basisdaten und zusätzliche Mods aus getrennten Verzeichnissen und überlagert sie nach Priorität.
+
+
+  
 
 # Bausteinsicht {#section-building-block-view}
 
