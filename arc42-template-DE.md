@@ -531,13 +531,20 @@ Durch diese Architektur besitzt 0 A.D. klar definierte Schnittstellen zum Betrie
 ```
 
 
-# Bausteinsicht {#section-building-block-view}
+# Bausteinsicht 
 
 Dieser Abschnitt beschreibt die Zerlegung von ***0 A.D.*** in seine Hauptmodule, wie sie sich auch in der Struktur des Quellcodes widerspiegelt.
 Module der ersten Zerlegungsebene werden in ***0 A.D.*** als Subsysteme bezeichnet.
 Die → Bausteinsicht, Ebene 1 stellt diese Subsysteme einschließlich ihrer Hauptaufgaben und Schnittstellen dar.
 
 Für einige Subsysteme, insbesondere das → Simulationssystem (***Entity-Component-System***), enthält dieser Abschnitt zusätzlich eine detailliertere Zerlegung in → Ebene 2.
+
+
+## 5.1 Ebene 1 – Überblick über die Subsysteme
+
+Dieser Abschnitt beschreibt die wichtigsten Subsysteme von 0 A.D. auf oberster Ebene.
+Die Architektur trennt den technischen Kern (Engine) von der Darstellung, den Spieldaten und der Benutzeroberfläche.
+Jedes Subsystem erfüllt eine klar definierte Aufgabe und kommuniziert über wohlstrukturierte Schnittstellen mit anderen Modulen.
 
 
 # Laufzeitsicht {#section-runtime-view}
