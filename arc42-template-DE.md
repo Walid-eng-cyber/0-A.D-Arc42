@@ -565,7 +565,7 @@ Er koordiniert die **Ausführung der Hauptspielschleife**, verwaltet **Ressource
 Darüber hinaus stellt der Engine-Kern eine umfangreiche **Skript-Schnittstelle (Engine API)** zur Verfügung, über die JavaScript-Code (z. B. aus der GUI, KI oder Simulation) direkt mit der C++-Engine interagieren kann.
 
 
-### Verantwortlichkeiten
+### 5.2.1 Verantwortlichkeiten
 
 1. **Hauptspielschleife**
 
@@ -611,7 +611,7 @@ Der Engine-Kern stellt Infrastruktur zum Protokollieren, Debuggen und Profiliere
 Entwickler können während der Laufzeit Frame-Rate, Speicherverbrauch oder Simulationszeiten beobachten.
 Über Funktionen wie ProfileStart() und ProfileStop() kann auch aus JavaScript heraus Performance gemessen werden.
 
-### Engine-API
+### 5.2.2 Engine-API
 Die API besteht aus Hunderten von Funktionen, die sich in mehrere Gruppen einteilen lassen:
 
 | **Kategorie**                    | **Beispielfunktionen**                                                      | **Zweck**                                                          |
@@ -625,7 +625,7 @@ Die API besteht aus Hunderten von Funktionen, die sich in mehrere Gruppen eintei
 | **Internationalisierung (i18n)** | `Translate()`, `GetAllLocales()`, `SaveLocale()`                            | Übersetzungs- und Sprachunterstützung für GUI und Spieltexte       |
 | **Debugging & Profiling**        | `ProfileStart()`, `ProfileStop()`, `DumpSimState()`                         | Messung und Analyse von Laufzeitverhalten und Simulationszuständen |
 
-### Beziehungen zu anderen Subsystemen
+### 5.2.3 Beziehungen zu anderen Subsystemen
 | **Subsystem**           | **Beschreibung der Interaktion**                                                       |
 | ----------------------- | -------------------------------------------------------------------------------------- |
 | **Simulation (ECS)**    | Der Engine-Kern ruft regelmäßig Simulations-Updates auf und empfängt Statusänderungen. |
@@ -634,6 +634,59 @@ Die API besteht aus Hunderten von Funktionen, die sich in mehrere Gruppen eintei
 | **Netzwerk**            | Tauscht Befehle und Synchronisations-Informationen über den Hauptloop aus.             |
 | **GUI**                 | Nutzt die Engine-API, um Eingaben zu verarbeiten und Oberflächenelemente zu steuern.   |
 | **Daten- & Mod-System** | Liefert Konfigurations- und Inhaltsdaten beim Start.                                   |
+## 5.3 Simulationssystem (ECS)
+
+Simulationssystem ist für die gesamte Logik und den Zustand der Spielwelt verantwortlich — also für Einheiten, Gebäude, Ressourcen, Bewegungen, Kämpfe und wirtschaftliche Abläufe.
+Die Architektur des Systems basiert auf dem modernen Entwurfsmuster **Entity-Component-System (ECS)**, das hohe Flexibilität, Wiederverwendbarkeit und Performance ermöglicht.
+
+### 5.3.1 Verantwortlichkeiten
+
+1. **Verwaltung des Spielzustands**
+
+    Das Simulationssystem speichert und aktualisiert alle Informationen über die Spielwelt:
+    Positionen, Zustände, Eigentümer, Ressourcen, Trefferpunkte, Sichtweite usw.
+    Es bestimmt, wie sich Einheiten bewegen, wie sie interagieren, kämpfen oder produzieren.
+
+2. **Echtzeit-Logik**
+
+    In jeder Simulations-Tick (Logik-Frame) werden alle relevanten Komponenten aktualisiert.
+    Dadurch wird das Verhalten der Spielobjekte bestimmt, z. B. Pfadfindung, Kampfentscheidungen, Baufortschritt oder Ressourcenabbau.
+
+3. **Synchronisation mit Netzwerk und Engine**
+
+    Die Simulation erhält Befehle von der Benutzeroberfläche oder vom Netzwerkmodul
+    und überträgt den aktualisierten Spielzustand an das Rendering- und Audio-Subsystem.
+    Im Mehrspielermodus sorgt eine deterministische Simulation dafür, dass alle Clients denselben Spielverlauf haben.
+
+4. **Ereignissteuerung und Messaging**
+
+    Die Kommunikation innerhalb der Simulation erfolgt über Nachrichten (Events).
+    Beispiel: Eine Einheit stirbt → das System sendet eine Nachricht „EntityDestroyed“ → andere Komponenten reagieren darauf (z. B. Soundeffekt oder Punktestand-Update).
+
+5. **Erweiterbarkeit durch Daten und Skripte**
+
+    Spielinhalte (z. B. Einheiten oder Gebäude) sind datengetrieben in XML/JSON beschrieben
+    und können mit JavaScript-Skripten um spezifische Logik erweitert werden,
+    ohne den C++-Code zu verändern.
+
+### 5.3.2 ECS
+Das Simulationssystem folgt dem ECS-Prinzip und ist in drei zentrale Strukturen gegliedert:
+| **Element**                | **Beschreibung**                                                                                                                                                                                                                       |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Entity (Entität)**       | Repräsentiert ein einzelnes Spielobjekt – z. B. eine Einheit, ein Gebäude oder ein Projektil. Jede Entität besitzt eine eindeutige ID und besteht aus einer Menge von Komponenten.                                                     |
+| **Component (Komponente)** | Kapselt Daten, die eine bestimmte Eigenschaft oder Fähigkeit beschreiben, z. B. Position, Gesundheit, Angriffskraft, Produktion oder Sichtweite. Komponenten enthalten **keine Logik**, nur Zustand.                                   |
+| **System**                 | Implementiert die Logik, die auf Komponenten angewendet wird. Jedes System ist für einen bestimmten Aspekt zuständig, z. B. Bewegung, Kampf, Produktion, KI oder Sichtberechnung. Systeme werden in jedem Simulations-Tick ausgeführt. |
+
+### 5.3.3 Komponenten und Systeme
+
+| **Komponenten**                       | **Beispielhafte Systeme**                                       |
+| ------------------------------------- | --------------------------------------------------------------- |
+| `Position`, `Velocity`, `Orientation` | Bewegungssystem (aktualisiert Position und Richtung)            |
+| `Health`, `Attack`, `Armor`           | Kampfsystem (führt Angriffe aus und berechnet Schaden)          |
+| `ResourceGatherer`, `Storage`         | Wirtschaftssystem (sammelt Ressourcen, verwaltet Lagerbestände) |
+| `ProductionQueue`, `Technology`       | Produktions-/Forschungssystem                                   |
+| `Vision`, `Ownership`, `Formation`    | KI- und Sichtsysteme                                            |
+| `Decay`, `Obstruction`, `Projectile`  | Umwelt- und Kollisionssysteme                                   |
 
 
 # Laufzeitsicht {#section-runtime-view}
