@@ -540,11 +540,100 @@ Die → Bausteinsicht, Ebene 1 stellt diese Subsysteme einschließlich ihrer Hau
 Für einige Subsysteme, insbesondere das → Simulationssystem (***Entity-Component-System***), enthält dieser Abschnitt zusätzlich eine detailliertere Zerlegung in → Ebene 2.
 
 
-## 5.1 Ebene 1 – Überblick über die Subsysteme
+## 5.1 Überblick über die Subsysteme
 
 Dieser Abschnitt beschreibt die wichtigsten Subsysteme von 0 A.D. auf oberster Ebene.
 Die Architektur trennt den technischen Kern (Engine) von der Darstellung, den Spieldaten und der Benutzeroberfläche.
 Jedes Subsystem erfüllt eine klar definierte Aufgabe und kommuniziert über wohlstrukturierte Schnittstellen mit anderen Modulen.
+
+| **Subsystem**                | **Kurzbeschreibung**                                                                                                                                                                                               |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Game Engine Core**         | Steuert die Hauptspielschleife, verwaltet Ereignisse und Ressourcen. Stellt grundlegende Dienste wie Logging, Konfiguration und Initialisierung bereit.                                                            |
+| **Simulationssystem (ECS)**  | Das zentrale Logiksystem des Spiels. Verwendet das **Entity-Component-System**-Prinzip, um Einheiten, Gebäude und Ressourcen zu verwalten. Beinhaltet Bewegungs-, Kampf-, Wirtschafts- und KI-Logik.               |
+| **Rendering-Subsystem**      | Verantwortlich für die visuelle Darstellung der Spielwelt. Rendert Gelände, Einheiten und Effekte mithilfe von **OpenGL**. Aktualisiert die Szene basierend auf dem Simulationszustand.                            |
+| **Audio-Subsystem**          | Steuert Soundeffekte und Hintergrundmusik. Nutzt **OpenAL** für räumliche Audiowiedergabe und sorgt für immersives Sounddesign.                                                                                    |
+| **Netzwerkmodul**            | Ermöglicht Mehrspieler-Partien über eine **deterministische Simulation** mit **Befehlssynchronisation (Lockstep-Modell)**. Zuständig für Sitzungsverwaltung, Replays und Fehlerbehandlung bei Desynchronisationen. |
+| **Benutzeroberfläche (GUI)** | Umfasst Menüs, das In-Game-HUD und Eingabeverarbeitung (Maus, Tastatur). Basierend auf **XML-Layouts** und **JavaScript-Logik**. Übersetzt Benutzereingaben in Simulationsbefehle.                                 |
+| **Daten- und Mod-System**    | Lädt alle Spieldaten wie Einheiten, Karten, Zivilisationen, Skripte und Texturen. Unterstützt ein modulares Dateisystem, das das einfache Hinzufügen und Aktivieren von Mods ermöglicht.                           |
+| **KI- und Scripting-Ebene**  | Implementiert computergesteuerte Gegner (z. B. Petra Bot) und Spielereignisse. Nutzt **JavaScript**, um KI-Verhalten, Strategien und Skripte für Gameplay zu definieren.                                           |
+| *Tabelle: Überblick über Subsysteme von 0 A.D.*     |                                            |
+
+##  5.2  Game Engine 
+
+Der Game Engine Core bildet das zentrale Steuersystem von *0 A.D.* und ist die Grundlage, auf der alle anderen Subsysteme aufbauen.
+Er koordiniert die **Ausführung der Hauptspielschleife**, verwaltet **Ressourcen und Ereignisse** und stellt **gemeinsame Dienste** für Simulation, Rendering, Audio, Netzwerk und GUI bereit.
+Darüber hinaus stellt der Engine-Kern eine umfangreiche **Skript-Schnittstelle (Engine API)** zur Verfügung, über die JavaScript-Code (z. B. aus der GUI, KI oder Simulation) direkt mit der C++-Engine interagieren kann.
+
+
+### Verantwortlichkeiten
+
+1. **Hauptspielschleife**
+
+    Der Engine-Kern steuert die kontinuierlich laufende Hauptschleife des Spiels.
+    Jeder Schleifendurchlauf (Frame) führt mehrere Schritte aus:
+
+    - Verarbeitung von Eingaben aus GUI und Netzwerk
+    - Aktualisierung des Simulationssystems (Spielzustand und Logik)
+    - Weitergabe aktualisierter Daten an Rendering- und Audio-Subsysteme
+    - Verwaltung der Zeitschritte und Synchronisierung aller Subsysteme
+    - Hintergrundaufgaben wie Laden von Assets oder Empfang von Netzwerkbefehlen
+
+    Dadurch werden gleichmäßige Bildraten und eine stabile Ausführung des Spiels gewährleistet.
+
+2. **Initialisierung und Beendigung**
+
+    Beim Start initialisiert der Engine-Kern alle Subsysteme, lädt Konfigurationsdateien und Ressourcen,
+    und richtet Rendering (OpenGL), Audio (OpenAL), Netzwerk (ENet) sowie Mod-Verzeichnisse ein.
+    Beim Beenden werden alle Ressourcen sauber freigegeben, um Speicherlecks oder Datenverluste zu vermeiden.
+
+3. **Ressourcen- und Ereignisverwaltung**
+
+    Der Engine-Kern fungiert als zentrale Ereignis- und Ressourcenverwaltung.
+    Subsysteme kommunizieren über Ereignisse anstatt direkter Aufrufe.
+    Beispiel:
+
+    - Die Simulation löst ein Ereignis „Einheit zerstört“ aus → das Rendering zeigt eine Explosion → das Audio-System spielt den passenden Sound.
+    Zusätzlich verwaltet der Engine-Kern Caching und Zugriff auf Texturen, Modelle, Sounds und Skripte, um Ladezeiten zu reduzieren.
+
+4. **Plattform-Abstraktionsschicht**
+
+    Um 0 A.D. auf verschiedenen Betriebssystemen lauffähig zu machen, abstrahiert der Engine-Kern plattformspezifische Funktionen über Bibliotheken wie SDL oder Boost.
+    Dadurch werden Dateizugriffe, Eingabegeräte, Threads und Fenstererstellung unabhängig vom Betriebssystem gehandhabt.
+
+5. **Zeit- und Synchronisationsmanagement**
+
+    Der Engine-Kern verwaltet konsistente Zeitwerte (Frame-Zeit, Simulationszeit, Delta-Zeit),
+    um sicherzustellen, dass Simulation, Rendering und Netzwerk-Ticks synchron laufen.
+    Das ist besonders wichtig für die Konsistenz im Mehrspielermodus.
+
+6. **Logging, Debugging und Profiling**
+Der Engine-Kern stellt Infrastruktur zum Protokollieren, Debuggen und Profilieren bereit.
+Entwickler können während der Laufzeit Frame-Rate, Speicherverbrauch oder Simulationszeiten beobachten.
+Über Funktionen wie ProfileStart() und ProfileStop() kann auch aus JavaScript heraus Performance gemessen werden.
+
+### Engine-API
+Die API besteht aus Hunderten von Funktionen, die sich in mehrere Gruppen einteilen lassen:
+
+| **Kategorie**                    | **Beispielfunktionen**                                                      | **Zweck**                                                          |
+| -------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **Systemsteuerung**              | `Exit()`, `Crash()`, `GetEngineInfo()`, `GetBuildVersion()`                 | Kontrolle über Laufzeit, Debug-Informationen und Version           |
+| **Datei- und Datenzugriff**      | `FileExists()`, `ReadJSONFile()`, `ListDirectoryFiles()`                    | Zugriff auf Spieldaten und Konfigurationsdateien                   |
+| **Simulation & Gameplay**        | `PostCommand()`, `AddEntity()`, `DestroyEntity()`, `GetTemplate()`          | Senden und Verwalten von Spielbefehlen aus Skripten                |
+| **GUI-Steuerung**                | `GetGUIObjectByName()`, `OpenChildPage()`, `SetGUIScale()`, `PlayUISound()` | Kontrolle der Benutzeroberfläche und Anzeigeelemente               |
+| **Netzwerk**                     | `StartNetworkGame()`, `SendNetworkChat()`, `AssignNetworkPlayer()`          | Steuerung und Synchronisierung von Mehrspieler-Sitzungen           |
+| **Konfiguration & Mods**         | `ConfigDB_SaveValue()`, `GetAvailableMods()`, `SetModsAndRestartEngine()`   | Verwaltung von Konfigurationen und aktivierten Mods                |
+| **Internationalisierung (i18n)** | `Translate()`, `GetAllLocales()`, `SaveLocale()`                            | Übersetzungs- und Sprachunterstützung für GUI und Spieltexte       |
+| **Debugging & Profiling**        | `ProfileStart()`, `ProfileStop()`, `DumpSimState()`                         | Messung und Analyse von Laufzeitverhalten und Simulationszuständen |
+
+### Beziehungen zu anderen Subsystemen
+| **Subsystem**           | **Beschreibung der Interaktion**                                                       |
+| ----------------------- | -------------------------------------------------------------------------------------- |
+| **Simulation (ECS)**    | Der Engine-Kern ruft regelmäßig Simulations-Updates auf und empfängt Statusänderungen. |
+| **Rendering**           | Erhält vom Engine-Kern aktuelle Simulationsdaten zur Darstellung.                      |
+| **Audio**               | Spielt Sounds basierend auf Ereignissen aus Simulation oder GUI ab.                    |
+| **Netzwerk**            | Tauscht Befehle und Synchronisations-Informationen über den Hauptloop aus.             |
+| **GUI**                 | Nutzt die Engine-API, um Eingaben zu verarbeiten und Oberflächenelemente zu steuern.   |
+| **Daten- & Mod-System** | Liefert Konfigurations- und Inhaltsdaten beim Start.                                   |
 
 
 # Laufzeitsicht {#section-runtime-view}
