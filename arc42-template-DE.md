@@ -558,6 +558,9 @@ Jedes Subsystem erfüllt eine klar definierte Aufgabe und kommuniziert über woh
 | **KI- und Scripting-Ebene**  | Implementiert computergesteuerte Gegner (z. B. Petra Bot) und Spielereignisse. Nutzt **JavaScript**, um KI-Verhalten, Strategien und Skripte für Gameplay zu definieren.                                           |
 | *Tabelle: Überblick über Subsysteme von 0 A.D.*     |                                            |
 
+*Dieses Sequenzdiagramm repräsentiert den kompletten Architekturfluss.*
+![Sequence Diagram](./SequenceDiagramSystemundSubsystem.png)
+
 ##  5.2  Game Engine 
 
 Der Game Engine Core bildet das zentrale Steuersystem von *0 A.D.* und ist die Grundlage, auf der alle anderen Subsysteme aufbauen.
@@ -688,98 +691,211 @@ Das Simulationssystem folgt dem ECS-Prinzip und ist in drei zentrale Strukturen 
 | `Vision`, `Ownership`, `Formation`    | KI- und Sichtsysteme                                            |
 | `Decay`, `Obstruction`, `Projectile`  | Umwelt- und Kollisionssysteme                                   |
 
+## 5.4 Rendering Subsystem
 
-# Laufzeitsicht {#section-runtime-view}
+Das **Rendering-Subsystem** ist für **grafische Darstellung der Spielwelt** verantwortlich.
+Es bildet die Schnittstelle zwischen der Simulationslogik und der visuellen Ausgabe auf dem Bildschirm. Das System verarbeit die von der Simulatiuon bereitgestellten Datem (z.b Position, Animationen uzw.) und rendert daraus eine realistische , dynamische 3D-Spielwelt.
+Das Rendering erfolgt plattformübergreifend über **OpenGl** und nutzt moderne Techsniken wie Schader , LOD(Leveld of Detail) und Culling.
 
-:::::::::::: sidebar
-::: title
-:::
+### 5.4.1 Verantwortlichkeiten
 
-:::: formalpara
-::: title
-Inhalt
-:::
+- 1. **Darstellung der Spielwelt**
 
-Diese Sicht erklärt konkrete Abläufe und Beziehungen zwischen Bausteinen
-in Form von Szenarien aus den folgenden Bereichen:
-::::
+      Das Rendering-System übersetzt den abstrakten Spielzustand aus der Simulation (z. B. Einheiten, Gebäude, Gelände, Effekte) in sichtbare 3D-Objekte.
+      Es verwaltet die Szenegraph-Struktur, in der alle darzustellenden Elemente organisiert sind.
 
-- Wichtige Abläufe oder *Features*: Wie führen die Bausteine der
-  Architektur die wichtigsten Abläufe durch?
+- 2. **Kamerasteuerung und Sichtfeld**
 
-- Interaktionen an kritischen externen Schnittstellen: Wie arbeiten
-  Bausteine mit Nutzern und Nachbarsystemen zusammen?
+      Die Kamera kann frei bewegt, rotiert und gezoomt werden.
+      Das Rendering-System berechnet, welche Objekte im aktuellen Sichtfeld (Frustum) liegen, und rendert nur diese (Frustum Culling).
 
-- Betrieb und Administration: Inbetriebnahme, Start, Stop.
+- 3. **Beleuchtung, Schatten und Effekte**
 
-- Fehler- und Ausnahmeszenarien
+      Das System nutzt Shader-basierte Beleuchtung, dynamische Schatten und Partikeleffekte, um eine realistische Spielumgebung zu erzeugen.
+      Wetter-, Feuer- und Explosionseffekte werden ebenfalls hier gesteuert.
 
-Anmerkung: Das Kriterium für die Auswahl der möglichen Szenarien (d.h.
-Abläufe) des Systems ist deren Architekturrelevanz. Es geht nicht darum,
-möglichst viele Abläufe darzustellen, sondern eine angemessene Auswahl
-zu dokumentieren.
+- 4. **Level of Detail (LOD)**
 
-:::: formalpara
-::: title
-Motivation
-:::
+      Abhängig von der Entfernung zur Kamera rendert das System Modelle mit unterschiedlicher Detailtiefe, um Performance zu optimieren.
 
-Sie sollten verstehen, wie (Instanzen von) Bausteine(n) Ihres Systems
-ihre jeweiligen Aufgaben erfüllen und zur Laufzeit miteinander
-kommunizieren.
-::::
+- 5. **UI-Overlay**
 
-Nutzen Sie diese Szenarien in der Dokumentation hauptsächlich für eine
-verständlichere Kommunikation mit denjenigen Stakeholdern, die die
-statischen Modelle (z.B. Bausteinsicht, Verteilungssicht) weniger
-verständlich finden.
+      Neben der 3D-Welt rendert das Subsystem auch 2D-Overlays (z. B. Auswahlrahmen, Lebensbalken oder Minimap) über der Hauptszene.
 
-:::: formalpara
-::: title
-Form
-:::
+- 6. **Performance und Optimierung**
 
-Für die Beschreibung von Szenarien gibt es zahlreiche
-Ausdrucksmöglichkeiten. Nutzen Sie beispielsweise:
-::::
+      Das Rendering ist auf hohe Performance ausgelegt und nutzt Techniken wie Instancing, Textur-Atlas, Batch-Rendering und Occlusion Culling.
+      Frame-Timing und GPU-Performance werden über das Engine-Profiling-System überwacht.
 
-- Nummerierte Schrittfolgen oder Aufzählungen in Umgangssprache
 
-- Aktivitäts- oder Flussdiagramme
+### 5.4.2 Aufbau 
 
-- Sequenzdiagramme
+Das Rendering-Subsystem besteht aus mehreren logischen Komponenten beispielweise :
 
-- BPMN (Geschäftsprozessmodell und -notation) oder EPKs
-  (Ereignis-Prozessketten)
+| **Komponente**        | **Beschreibung**                                                                                |
+| --------------------- | ----------------------------------------------------------------------------------------------- |
+| **Scene Graph**       | Hierarchische Datenstruktur, die alle sichtbaren Objekte (Modelle, Effekte, Gelände) verwaltet. |
+| **Terrain Renderer**  | Zeichnet Gelände, Höhenkarten, Texturen und Übergänge zwischen Biomen.                          |
+| **Model Renderer**    | Rendert Einheiten, Gebäude und Objekte mit Animationen.                                         |
+| **Water Renderer**    | Simuliert Wasser, Reflexionen und Wellenbewegungen.                                             |
+| **Particle Renderer** | Verantwortlich für Effekte wie Rauch, Feuer, Staub oder Projektilspuren.                        |
+| **Shader Manager**    | Lädt und verwaltet GPU-Shader (Beleuchtung, Transparenz, Texturen).                             |
+| **Post-Processing**   | Fügt Nachbearbeitungseffekte hinzu (z. B. Bloom, Tiefenschärfe, Farbkorrektur).                 |
 
-- Zustandsautomaten
+## 5.5 Audio Subsystem
 
-- ...​
+Das **Audio-Subsystem** ist für die gesamte akustische Darstellung in 0 A.D verantwortlich.
+Es verarbeitet Soundeffekte, Umgebungsgeräusche und Hintergrundmusik und sorgt dafür, dass akustische Ereignisse synchron zur Simulation und Darstellung ausgefürht werden.
+Das System basiert auf der plattformübergreifenden Audio-Bibliothek **OpenAL**, welche 3D-Sound, Positionsberechnung und räumliche Audioeffekte unterstützt.
 
-:::: formalpara
-::: title
-Weiterführende Informationen
-:::
+### 5.5.1 Verantwortlichkeiten
 
-Siehe [Laufzeitsicht](https://docs.arc42.org/section-6/) in der
-online-Dokumentation (auf Englisch!).
-::::
-::::::::::::
+- 1. **Abspielen von Soundeffekten**
 
-## *\<Bezeichnung Laufzeitszenario 1\>* {#_bezeichnung_laufzeitszenario_1}
+      Das Audio-System spielt Ereignissounds ab, wie Angriffe, Treffer, Gebäudefertigstellungen oder das Fällen eines Baumes.
+      Diese Sounds werden durch Nachrichten aus der Simulation ausgelöst.
 
-- \<hier Laufzeitdiagramm oder Ablaufbeschreibung einfügen\>
+- 2. **Wiedergabe von Musik und Ambient-Sounds**
 
-- \<hier Besonderheiten bei dem Zusammenspiel der Bausteine in diesem
-  Szenario erläutern\>
+      Hintergrundmusik und Umgebungsgeräusche (Wind, Wasser, Tiere) laufen parallel zum Spielgeschehen und werden im Audio-Subsystem verwaltet.
+      Es steuert Lautstärke, Übergänge und Wiedergabelisten.
 
-## *\<Bezeichnung Laufzeitszenario 2\>* {#_bezeichnung_laufzeitszenario_2}
+- 3. **Räumliches (3D-)Audio**
 
-...​
+      Die Position der Kamera und der Entitäten bestimmt, wie laut und aus welcher Richtung ein Sound abgespielt wird.
+      Das System berechnet hierfür Lautstärkeabfälle, Panning und Filter, um ein realistisches Raumgefühl zu erzeugen.
 
-## *\<Bezeichnung Laufzeitszenario n\>* {#_bezeichnung_laufzeitszenario_n}
+- 4. **Audio-Mixing und Lautstärkekontrolle**
 
-...​
+      Das System mischt unterschiedliche Audiokanäle (Effekte, Musik, Interface-Sounds) und bietet globale Regler für Spieler und Entwickler.
+
+- 5. **Synchronisierung mit Simulation und Rendering**
+
+      Die Audioausgabe reagiert auf Änderungen im Spielzustand, z. B.:
+
+      - Einheit stirbt → Todesgeräusch
+      - Projektil trifft → Aufprallsound
+      - Gebäude startet Produktion → akustischer Hinweis
+
+- 6. **Performance-Verwaltung**
+
+      Das Audio-System arbeitet größtenteils asynchron und nutzt eigene Puffer, damit es die Framerate oder den Simulationsfluss nicht beeinflusst.
+
+### 5.5.2 Aufbau
+
+Das Audio-Subsystem besteht aus mehreren Komponenten :
+
+| **Komponente**              | **Beschreibung**                                                                           |
+| --------------------------- | ------------------------------------------------------------------------------------------ |
+| **Sound Manager**           | Verwalten aller Soundquellen; steuert das Laden, Abspielen und Stoppen von Sounds.         |
+| **Music Manager**           | Verwaltung von Hintergrundmusik, Wiedergabelisten und Übergängen.                          |
+| **Audio Source Controller** | Repräsentiert eine einzelne Tonquelle (z. B. eine Einheit, Explosion oder Umgebungssound). |
+| **Listener**                | Entspricht der Kamera; bestimmt, wie der Spieler den Ton wahrnimmt.                        |
+| **OpenAL Backend**          | Bindings zu OpenAL für räumliches Audio und Hardwarebeschleunigung.                        |
+
+## 5.6 Benutzeroberfläche
+
+Die **Benutzeroberfläche (GUI)** von 0 A.D. ist für alle Interaktionen zwischen Spieler und Spiel zuständig.
+Sie umfasst sowohl das **Hauptmenü**, die **Spielkonfiguration**, die **Lobby**, als auch das **In-Game-HUD**, über das der Spieler Einheiten auswählt, Befehle erteilt und Informationen über den Spielzustand erhält.
+Die GUI wird überwiegend über **XML-Layout-Dateien und JavaScript-Skripte** definiert und ist somit vollständig daten- und skriptabhängig aufgebaut.
+Dadurch ist sie besonders flexibel, leicht modifizierbar und gut erweiterbar.
+
+
+### 5.6.1 verantwortlichkeiten
+
+- 1. **Verarbeitung von Benutzereingaben**
+
+      Die GUI interpretiert alle Eingaben des Spielers:
+
+      - Mausaktionen (Klicken, Ziehen, Auswahlrechtecke)
+
+      - Tastatureingaben (Hotkeys, Kamerasteuerung)
+
+      - Menüinteraktionen
+
+      - Diese Eingaben werden in Simulationsbefehle übersetzt, die an die ECS-Simulation weitergeleitet werden.
+
+- 2. **Anzeige von Spielinformationen**
+
+      Die GUI zeigt alle relevanten Daten an, wie:
+
+      - Ressourcen und Spielstatistiken
+
+      - Ausgewählte Einheiten und deren Attribute
+
+      - Minimap
+
+      - Bau- und Produktionsmenüs
+
+      - Tooltips, Befehlsleisten und Einheitenaktionstasten
+      Diese Informationen werden dynamisch aus der Simulation und dem Engine-Kern abgerufen.
+    
+- 3. **Navigieren durch Menüs und Spielmodi**
+
+      Die GUI verwaltet Menülogik, z. B.:
+
+      - Startmenü
+
+      - Optionen (Audio, Grafik, Steuerung)
+
+      - Kampagnen- und Szenariomenüs
+
+      - Multiplayer-Lobby
+
+      - Lade-/Speichermodi
+
+- 4. **Kommunikation mit der Engine über die Engine-API**
+
+      Die GUI nutzt viele Funktionen der Engine-API (z. B. Engine.GetGUIObjectByName, Engine.PickEntityAtPoint, Engine.PostCommand).
+      Dadurch ruft sie sowohl Simulationsbefehle als auch Engine-Funktionen ab, ohne C++-Code zu berühren.
+
+- 5. **Darstellung von Statusänderungen**
+
+      Die GUI reagiert auf Spielereignisse:
+
+      - Eine Einheit wird verletzt → Gesundheitsbalken ändern sich
+
+      - Ein Gebäude wird fertiggestellt → Icons aktualisieren sich
+
+      - Eine neue Technologie wird erforscht → Tooltip + Effekte
+      Die GUI ist eng mit dem Event-System des Engine-Kerns verbunden.
+
+
+### 5.6.2 Aufbau
+
+Die GUI besteht aus meheren klar abgegrenzten Komponenten:
+
+| **Komponente**             | **Beschreibung**                                                                            |
+| -------------------------- | ------------------------------------------------------------------------------------------- |
+| **XML-Layout-Dateien**     | Definieren die Struktur aller GUI-Elemente: Buttons, Panels, Tooltips, Frames.              |
+| **JavaScript-Logik**       | Steuert dynamische Inhalte, reagiert auf Eingaben und führt Engine-API-Aufrufe aus.         |
+| **GUI Renderer**           | Rendert 2D-Overlays und HUD-Elemente über der 3D-Spielszene.                                |
+| **GUI Objekte / Controls** | Standard-Steuerelemente wie Buttons, Listen, Rahmen, Anzeigen.                              |
+| **Interface Manager**      | Verwaltet GUI-Seiten (z. B. Menü → Spiel → Pausemenü) und sorgt für reibungslose Übergänge. |
+
+
+# Laufzeitsicht 
+
+Diese Sicht beschreibt im Gegensatz zur statischen Bausteinsicht die dynamischen Abläufe zur Laufzeit des Systems.Im Fokus steht nicht, aus welchen Modulen 0 A.D. besteht, sondern wie diese Module in typischen Szenarien zusammenarbeiten.
+
+## 6.1 Beispiele für Szenarien
+
+### 6.1.1 Beispiel 1: Spieler gibt einer Einheit einen Bewegungsbefehl (Move Command)
+
+
+Dieses Diagramm zeigt das Zusammenspiel von **GUI** → **Engine Core** → **Simulation (ECS)** → **Rendering**.
+
+![Move Command](GUI-Engine-Sim.png)
+
+### 6.1.2 Beispiel 2: Multiplayer Lockstep – alle Clients synchronisieren Kommandos
+
+![Lockstep](MultiplayerLockstep.png)
+
+
+### 6.1.3 Beispiel 3: Start eine Spiels - Map laden
+
+![StartGame](Startthegame.png)
+
 
 # Verteilungssicht {#section-deployment-view}
 
