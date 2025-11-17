@@ -558,8 +558,9 @@ Jedes Subsystem erfüllt eine klar definierte Aufgabe und kommuniziert über woh
 | **KI- und Scripting-Ebene**  | Implementiert computergesteuerte Gegner (z. B. Petra Bot) und Spielereignisse. Nutzt **JavaScript**, um KI-Verhalten, Strategien und Skripte für Gameplay zu definieren.                                           |
 | *Tabelle: Überblick über Subsysteme von 0 A.D.*     |                                            |
 
-*Dieses Sequenzdiagramm repräsentiert den kompletten Architekturfluss.*
+
 ![Sequence Diagram](./SequenceDiagramSystemundSubsystem.png)
+*Dieses Sequenzdiagramm repräsentiert den kompletten Architekturfluss.*
 
 ##  5.2  Game Engine 
 
@@ -887,15 +888,21 @@ Dieses Diagramm zeigt das Zusammenspiel von **GUI** → **Engine Core** → **Si
 
 ![Move Command](GUI-Engine-Sim.png)
 
+Der Benutzer löst eine Aktion aus, die GUI erzeugt einen passenden Command, dieser wird durch den Engine Core an die Simulation übergeben und nach Ausführung visuell dargestellt.
 ### 6.1.2 Beispiel 2: Multiplayer Lockstep – alle Clients synchronisieren Kommandos
 
 ![Lockstep](MultiplayerLockstep.png)
 
+Hier wird gezeigt, wie 0 A.D. das deterministische Lockstep-Netzwerkmodell umsetzt:
+Nach einem Spielbefehl werden die Commands über das Netzwerk an alle Clients verteilt.
+Erst wenn alle Spieler denselben Befehl empfangen haben, wird der Simulations-Tick ausgeführt.
 
 ### 6.1.3 Beispiel 3: Start eine Spiels - Map laden
 
 ![StartGame](Startthegame.png)
 
+Dieses Diagramm beschreibt, wie beim Start eines Spiels die GUI den Engine Core anweist,
+die notwendigen Ressourcen zu laden, die Simulation zu initialisieren und anschließend die Darstellung einzuleiten.
 
 # Verteilungssicht {#section-deployment-view}
 
@@ -1194,194 +1201,48 @@ Beispiele zum Thema ADR.
 ::::
 ::::::::::::
 
-# Qualitätsanforderungen {#section-quality-scenarios}
+# Qualitätsanforderungen 
 
-:::::::::: sidebar
-::: title
-:::
+## 10.1 Qualitätsbaum
 
-:::: formalpara
-::: title
-Inhalt
-:::
+Das folgende Bild gibt in Form eines sogenannten Qualitätsbaumes  einen Überblick über die relevanten Qualitätsmerkmale und ordnet ihnen Szenarien als Beispiele zu. Die Qualitätsziele sind in der Abbildung ebenfalls enthalten und verweisen jeweils auf die Szenarien, welche sie illustrieren.
 
-Dieser Abschnitt enthält alle relevanten Qualitätsanforderungen.
-::::
+![Qualitätsbaum](Qualitätanforderungen.png)
+## 10.2 Qualitätsszenarien
 
-Die wichtigsten davon haben Sie bereits in Abschnitt 1.2
-(Qualitätsziele) hervorgehoben, daher soll hier nur auf sie verwiesen
-werden. In diesem Abschnitt 10 sollten Sie auch Qualitätsanforderungen
-mit geringerer Bedeutung erfassen, deren Nichterfüllung keine großen
-Risiken birgt (die aber *nice-to-have* sein könnten).
+Die Anfangsbuchstaben der Bezeichner (IDs) der Szenarien in der folgenden Tabelle stehen jeweils für das übergeordnete Qualitätsmerkmal,  M beispielsweise für Erweiterbarkeit. Die Bezeichner finden auch im Qualitätsbaum Verwendung. Nicht immer lassen sich die Szenarien eindeutig einem Merkmal zuordnen. Sie treten daher mitunter mehrmals im Qualitätsbaum auf.
 
-:::: formalpara
-::: title
-Motivation
-:::
 
-Weil Qualitätsanforderungen die Architekturentscheidungen oft maßgeblich
-beeinflussen, sollten Sie die für Ihre Stakeholder relevanten
-Qualitätsanforderungen kennen, möglichst konkret und operationalisiert.
-::::
+| **Qualitätsbereich**             | **ID**  | **Qualitätsszenario (Stimulus, Kontext, Reaktion, Messkriterium)**                                                                                                                               |
+| -------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Erweiterbarkeit / Modding**    | **M01** | *Stimulus:* Modder fügt eine neue Zivilisation hinzu. *Kontext:* Keine Engine-Codeänderung. *Reaktion:* Engine lädt Templates. *Messkriterium:* Zivilisation erscheint im Menü und ist spielbar. |
+|                                  | **M02** | *Stimulus:* Neue XML/JSON-Datei wird erstellt. *Kontext:* Spielstart. *Reaktion:* Engine liest Datei korrekt. *Messkriterium:* Einheit erscheint ohne Codeänderung im Spiel.                     |
+|                                  | **M03** | *Stimulus:* Neues JavaScript-Script wird hinzugefügt. *Kontext:* Engine startet. *Reaktion:* Script läuft in Sandbox. *Messkriterium:* Funktioniert ohne Engine-Modifikation.                    |
+| **Performance / Effizienz**      | **P01** | *Stimulus:* 400 Einheiten aktiv. *Kontext:* Standard-Hardware. *Reaktion:* Simulation verarbeitet alle. *Messkriterium:* Mindestens 30 FPS.                                                      |
+|                                  | **P02** | *Stimulus:* Große Massenschlacht. *Kontext:* Viele Effekte. *Reaktion:* Rendering optimiert. *Messkriterium:* FPS bleibt > 25 FPS.                                                               |
+|                                  | **P03** | *Stimulus:* Spielerbefehl wird ausgeführt. *Kontext:* Hochlastphase. *Reaktion:* Engine verarbeitet sofort. *Messkriterium:* < 150 ms Verzögerung.                                               |
+|                                  | **P04** | *Stimulus:* Viele ECS-Komponenten verändern sich. *Kontext:* Simulations-Tick. *Reaktion:* ECS verarbeitet effizient. *Messkriterium:* Tick < 60 ms.                                             |
+| **Multiplayer-Zuverlässigkeit**  | **N01** | *Stimulus:* Spieler senden gleichzeitig Befehle. *Kontext:* Lockstep. *Reaktion:* Gleichzeitige Tick-Ausführung. *Messkriterium:* GameState identisch bei allen Clients.                         |
+|                                  | **N02** | *Stimulus:* Netzwerk-Lag. *Kontext:* Multiplayer-Spiel. *Reaktion:* Engine puffert Befehle. *Messkriterium:* Kein Desync.                                                                        |
+|                                  | **N03** | *Stimulus:* Replay wird geladen. *Kontext:* Gespeicherte Befehle. *Reaktion:* Simulation rekonstruiert Match. *Messkriterium:* 100% Identisch zur Originalpartie.                                |
+| **Wartbarkeit**                  | **W01** | *Stimulus:* Neues Subsystem wird hinzugefügt. *Kontext:* Modulare Architektur. *Reaktion:* Engine integriert über Interfaces. *Messkriterium:* Keine Änderungen an anderen Subsystemen nötig.    |
+|                                  | **W02** | *Stimulus:* Entwickler schreibt Unit-Test. *Kontext:* Subsystem-isolierung. *Reaktion:* Test läuft ohne Abhängigkeiten. *Messkriterium:* Komponente isoliert testbar.                            |
+|                                  | **W03** | *Stimulus:* Entwickler liest ECS-Komponenten. *Kontext:* Neue Fähigkeit. *Reaktion:* Leicht verständlich. *Messkriterium:* < 10 Minuten Einlernzeit.                                             |
+| **Portabilität**                 | **T01** | *Stimulus:* Spielstart auf verschiedenen OS. *Kontext:* Gleiches Build. *Reaktion:* Engine initialisiert erfolgreich. *Messkriterium:* Keine OS-spezifischen Fehler.                             |
+|                                  | **T02** | *Stimulus:* Update von OpenGL/SDL. *Kontext:* Engine nutzt abstrahierte APIs. *Reaktion:* Läuft ohne Änderungen. *Messkriterium:* Keine Inkompatibilitäten.                                      |
+|                                  | **T03** | *Stimulus:* OS hat andere Datei-API. *Kontext:* Engine nutzt FS-Abstraktion. *Reaktion:* Einheitliches Verhalten. *Messkriterium:* Keine Plattformbugs.                                          |
+| **Internationalisierung (I18N)** | **I01** | *Stimulus:* Sprachwechsel im Menü. *Kontext:* Spiel läuft. *Reaktion:* Texte laden neu. *Messkriterium:* < 1 Sekunde Reaktionszeit.                                                              |
+|                                  | **I02** | *Stimulus:* Anzeige chinesischer Schrift. *Kontext:* GUI aktiv. *Reaktion:* Engine rendert Unicode korrekt. *Messkriterium:* Keine Darstellungsfehler.                                           |
+|                                  | **I03** | *Stimulus:* Mod liefert neue .po-Dateien. *Kontext:* Spielstart. *Reaktion:* Engine lädt neue Strings. *Messkriterium:* Alle Texte korrekt sichtbar.                                             |
+| **Benutzbarkeit**                | **U01** | *Stimulus:* Spieler wählt Einheit im Kampf. *Kontext:* Viele Entities. *Reaktion:* HUD aktualisiert schnell. *Messkriterium:* < 200 ms.                                                          |
+|                                  | **U02** | *Stimulus:* Ressourcen ändern sich. *Kontext:* HUD aktiv. *Reaktion:* GUI aktualisiert Anzeige. *Messkriterium:* < 100 ms.                                                                       |
+|                                  | **U03** | *Stimulus:* Neuer Spieler startet Tutorial. *Kontext:* Standard-GUI. *Reaktion:* Eindeutige Anleitungen. *Messkriterium:* Spieler versteht Grundlagen in < 5 Minuten.                            |
+| **Stabilität & Sicherheit**      | **S01** | *Stimulus:* JavaScript-Mod enthält Fehler. *Kontext:* Engine lädt Mods. *Reaktion:* Sandbox blockiert fehlerhaften Code. *Messkriterium:* Kein Absturz.                                          |
+|                                  | **S02** | *Stimulus:* Textur fehlt. *Kontext:* Map-Ladevorgang. *Reaktion:* Engine loggt Warnung. *Messkriterium:* Spiel läuft weiter.                                                                     |
+|                                  | **S03** | *Stimulus:* XML ist ungültig. *Kontext:* Spielstart. *Reaktion:* Engine meldet Fehler. *Messkriterium:* Engine bleibt stabil.                                                                    |
 
-<div>
 
-::: title
-Weiterführende Informationen
-:::
-
-- Siehe [Qualitätsanforderungen](https://docs.arc42.org/section-10/) in
-  der online-Dokumentation (auf Englisch!).
-
-- Siehe auch das ausführliche [Q42 Qualitätsmodell auf
-  https://quality.arc42.org](https://quality.arc42.org).
-
-</div>
-::::::::::
-
-## Übersicht der Qualitätsanforderungen {#_übersicht_der_qualitätsanforderungen}
-
-:::::::::: sidebar
-::: title
-:::
-
-:::: formalpara
-::: title
-Inhalt
-:::
-
-Eine Übersicht oder Zusammenfassung der Qualitätsanforderungen.
-::::
-
-:::: formalpara
-::: title
-Motivation
-:::
-
-Oft stößt man auf Dutzende (oder sogar Hunderte) von detaillierten
-Qualitätsanforderungen für ein System. In diesem Abschnitt sollten Sie
-versuchen, sie zusammenzufassen, z. B. durch die Beschreibung von
-Kategorien oder Themen (wie z.B. von [ISO
-25010:2023](https://www.iso.org/obp/ui/#iso:std:iso-iec:25010:ed-2:v1:en)
-oder [Q42](https://quality.arc42.org) vorgeschlagen).
-::::
-
-Wenn diese Kurzbeschreibungen oder Zusammenfassungen bereits präzise,
-spezifisch und messbar sind, können Sie Abschnitt 10.2 auslassen.
-
-:::: formalpara
-::: title
-Form
-:::
-
-Verwenden Sie eine einfache Tabelle, in der jede Zeile eine Kategorie
-oder ein Thema und eine kurze Beschreibung der Qualitätsanforderung
-enthält. Alternativ können Sie auch eine Mindmap verwenden, um diese
-Qualitätsanforderungen zu strukturieren. In der Literatur (insb.
-\[Bass+21\]) ist die Idee eines *Quality Attribute Utility Tree* (auf
-Deutsch manchmal kurz als *Qualitätsbaum* bezeichnet) beschrieben
-worden, der den Oberbegriff „Qualität" als Wurzel hat und eine
-baumartige Verfeinerung des Begriffs „Qualität" verwendet.
-::::
-::::::::::
-
-## Qualitätsszenarien {#_qualitätsszenarien}
-
-:::::::::::: sidebar
-::: title
-:::
-
-:::: formalpara
-::: title
-Inhalt
-:::
-
-Qualitätsszenarien konkretisieren Qualitätsanforderungen und ermöglichen
-es zu entscheiden, ob sie erfüllt sind (im Sinne von
-Akzeptanzkriterien). Stellen Sie sicher, dass Ihre Szenarien spezifisch
-und messbar sind.
-::::
-
-Zwei Arten von Szenarien finden wir besonders nützlich:
-
-- Nutzungsszenarien (auch bekannt als Anwendungs- oder
-  Anwendungsfallszenarien) beschreiben, wie das System zur Laufzeit auf
-  einen bestimmten Auslöser reagieren soll. Hierunter fallen auch
-  Szenarien zur Beschreibung von Effizienz oder Performance. Beispiel:
-  Das System beantwortet eine Benutzeranfrage innerhalb einer Sekunde.
-
-- Änderungsszenarien\_ beschreiben die gewünschte Wirkung einer Änderung
-  oder Erweiterung des Systems oder seiner unmittelbaren Umgebung.
-  Beispiel: Zusätzliche Funktionalität wird implementiert oder
-  Anforderungen an ein Qualitätsmerkmal ändern sich, und der Aufwand
-  oder die Dauer der Änderung wird gemessen.
-
-:::: formalpara
-::: title
-Form
-:::
-
-Typische Informationen für detaillierte Szenarien sind die folgenden:
-::::
-
-In Kurzform (bevorzugt im Q42-Modell):
-
-- K**ontext/Hintergrund**: Um welche Art von System oder Komponente
-  handelt es sich, wie sieht die Umgebung oder Situation aus?
-
-- **Quelle/Stimulus**: Wer oder was initiiert oder löst ein Verhalten,
-  eine Reaktion oder eine Aktion aus.
-
-- **Metrik/Akzeptanzkriterien**: Eine Reaktion einschließlich einer
-  *Maßnahme* oder *Metrik*
-
-Die Langform von Szenarien (die von der SEI und \[Bass+21\] bevorzugt
-wird) ist detaillierter und enthält die folgenden Informationen:
-
-- **Szenario-ID**: Ein eindeutiger Bezeichner für das Szenario.
-
-- **Szenario-Name**: Ein kurzer, beschreibender Name für das Szenario.
-
-- **Quelle**: Die Entität (Benutzer, System oder Ereignis), die das
-  Szenario auslöst.
-
-- **Stimulus**: Das auslösende Ereignis oder die Bedingung, auf die das
-  System reagieren muss.
-
-- **Umgebung**: Der betriebliche Kontext oder die Bedingungen, unter
-  denen das System den Stimulus erlebt.
-
-- **Artefakt**: Die Bausteine oder anderen Elemente des Systems, die von
-  dem Stimulus betroffen sind.
-
-- **Reaktion**: Das Ergebnis oder Verhalten, das das System als Reaktion
-  auf den Stimulus zeigt.
-
-- **Antwortmaß**: Das Kriterium oder die Metrik, nach der die Antwort
-  des Systems bewertet wird.
-
-:::: formalpara
-::: title
-Beispiele
-:::
-
-Ausführliche Beispiele für Qualitätsanforderungen finden Sie auf [der
-Website zum Qualitätsmodell Q42](https://quality.arc42.org).
-::::
-
-<div>
-
-::: title
-Weitere Informationen
-:::
-
-- Len Bass, Paul Clements, Rick Kazman: „Software Architecture in
-  Practice", 4. Auflage, Addison-Wesley, 2021.
-
-</div>
-::::::::::::
-
-# Risiken und technische Schulden {#section-technical-risks}
+# Risiken und technische Schulden 
 
 :::::::::::: sidebar
 ::: title
