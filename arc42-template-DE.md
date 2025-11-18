@@ -1244,55 +1244,30 @@ Die Anfangsbuchstaben der Bezeichner (IDs) der Szenarien in der folgenden Tabell
 
 # Risiken und technische Schulden 
 
-:::::::::::: sidebar
-::: title
-:::
+Die folgende Tabelle gibt einen strukturierten Überblick über die zentralen technischen und architektonischen Risiken von 0 A.D.
 
-:::: formalpara
-::: title
-Inhalt
-:::
+| **Risiko-ID** | **Beschreibung**                                                                                              |
+| ------------- | ------------------------------------------------------------------------------------------------------------- |
+| **R01**       | Hohe Komplexität des ECS-Systems erschwert Debugging und führt zu potenziell unerwarteten Logikfehlern.       |
+| **R02**       | Gefahr von Desynchronisationen im Multiplayer aufgrund des deterministischen Lockstep-Modells.                |
+| **R03**       | Performance-Probleme bei großen Massenschlachten durch hohe CPU-Last (Pathfinding, Kampf, Sichtweite).        |
+| **R04**       | Abhängigkeit von älteren Technologien wie OpenGL oder SpiderMonkey kann zukünftige Wartung erschweren.        |
+| **R05**       | Fehlerhafte oder inkompatible Mods können Instabilität verursachen oder Spielabläufe stören.                  |
+| **R06**       | Große und komplexe Codebasis (C++ + JS) führt zu hoher Einarbeitungszeit für neue Entwickler.                 |
+| **R07**       | Plattformabhängige Unterschiede zwischen Windows, Linux und macOS können OS-spezifische Bugs verursachen.     |
+| **R08**       | Große Asset-Dateien führen zu langen Ladezeiten und hohem Speicherverbrauch.                                  |
+| **R09**       | KI (Petra Bot) benötigt viel CPU-Leistung, was im Spiel zu FPS-Einbrüchen führen kann.                        |
+| **R10**       | Komplexität der deterministischen Simulation macht bestimmte Bugs schwer reproduzierbar und schwer zu finden. |
 
-Eine nach Prioritäten geordnete Liste der erkannten Architekturrisiken
-und/oder technischen Schulden.
-::::
 
-<div>
+| **Technische Schuld** | **Beschreibung**                                     |
+| --------------------- | ---------------------------------------------------- |
+| **TS01**              | Veraltete SpiderMonkey JS-Engine → erschwert Updates |
+| **TS02**              | Viele Legacy-C++-Module ohne klare Abgrenzung        |
+| **TS03**              | Fehlende vollständige Testabdeckung                  |
+| **TS04**              | Inkompatible oder alte Assets im Modding-System      |
+| **TS05**              | Nicht vollständig dokumentierte ECS-Komponenten      |
 
-::: title
-Motivation
-:::
-
-> Risikomanagement ist Projektmanagement für Erwachsene.
->
-> ---  Tim Lister Atlantic Systems Guild
-
-</div>
-
-Unter diesem Motto sollten Sie Architekturrisiken und/oder technische
-Schulden gezielt ermitteln, bewerten und Ihren Management-Stakeholdern
-(z.B. Projektleitung, Product-Owner) transparent machen.
-
-:::: formalpara
-::: title
-Form
-:::
-
-Liste oder Tabelle von Risiken und/oder technischen Schulden, eventuell
-mit vorgeschlagenen Maßnahmen zur Risikovermeidung, Risikominimierung
-oder dem Abbau der technischen Schulden.
-::::
-
-:::: formalpara
-::: title
-Weiterführende Informationen
-:::
-
-Siehe [Risiken und technische
-Schulden](https://docs.arc42.org/section-11/) in der
-online-Dokumentation (auf Englisch!).
-::::
-::::::::::::
 
 # Glossar {#section-glossary}
 
