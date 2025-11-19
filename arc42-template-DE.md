@@ -1271,58 +1271,94 @@ Die folgende Tabelle gibt einen strukturierten Überblick über die zentralen te
 
 # Glossar {#section-glossary}
 
-:::::::::::: sidebar
-::: title
-:::
+## 11.1 Einleitung
 
-:::: formalpara
-::: title
-Inhalt
-:::
+Das folgende Glossar erklärt zentrale Begriffe aus der Spielwelt und der technischen Architektur von 0 A.D..
+Es umfasst sowohl Bezeichnungen aus dem Bereich historischer Echtzeitstrategiespiele (z. B. Einheiten, Gebäude, Ressourcen) als auch technische Konzepte aus der Engine-, Simulations- und Rendering-Architektur.
 
-Die wesentlichen fachlichen und technischen Begriffe, die Stakeholder im
-Zusammenhang mit dem System verwenden.
-::::
+Die Definitionen und Abbildungen sollen das Verständnis der Spielmechanik und der Systemarchitektur erleichtern und dienen als Nachschlagewerk für die folgenden Kapitel.
 
-Nutzen Sie das Glossar ebenfalls als Übersetzungsreferenz, falls Sie in
-mehrsprachigen Teams arbeiten.
+### Einheitentypen
 
-:::: formalpara
-::: title
-Motivation
-:::
 
-Sie sollten relevante Begriffe klar definieren, so dass alle Beteiligten
-::::
 
-- diese Begriffe identisch verstehen, und
 
-- vermeiden, mehrere Begriffe für die gleiche Sache zu haben.
 
-:::: formalpara
-::: title
-Form
-:::
 
-Zweispaltige Tabelle mit \<Begriff\> und \<Definition\>.
-::::
+<img src="GameImgs/Spearman.jpg" width="500">
 
-Eventuell weitere Spalten mit Übersetzungen, falls notwendig.
+**Spearman** – *Nahkampfeinheit, effektiv gegen Kavallerie.*
 
-:::: formalpara
-::: title
-Weiterführende Informationen
-:::
 
-Siehe [Glossar](https://docs.arc42.org/section-12/) in der
-online-Dokumentation (auf Englisch!).
-::::
-::::::::::::
+<img src="GameImgs/Swordman.jpg" width="500">
 
-+----------------------+-----------------------------------------------+
-| Begriff              | Definition                                    |
-+======================+===============================================+
-| *\<Begriff-1\>*      | *\<Definition-1\>*                            |
-+----------------------+-----------------------------------------------+
-| *\<Begriff-2*        | *\<Definition-2\>*                            |
-+----------------------+-----------------------------------------------+
+**Swordsman** – *Schwer gepanzerte Infanterie, stark im Nahkampf.*
+
+
+
+
+
+<img src="GameImgs/CavalrySpearman.jpg" width="500">
+
+**Cavalry Spearman** – *Schnelle Anti-Infanterie-Einheit.*
+
+
+
+
+
+
+<img src="GameImgs/Catapult.jpg" width="500">
+
+**Catapult** – *Effektiv gegen Gebäude.*
+
+
+
+<img src="GameImgs/Helden.jpg" width="500">
+
+**Hero Unit** – *Einzigartige Einheiten mit Auren und Spezialboni.*
+
+## Gebäudetypen
+
+
+
+
+<img src="GameImgs/Basisgebäude.webp" width="500">
+
+**Civic Center** – *Hauptgebäude, erzeugt Bürger und expandiert das Territorium.*
+
+
+<img src="GameImgs/House.jpg" width="500">
+
+**House** – *Erhöht Bevölkerungslimit.*
+
+
+
+<img src="GameImgs/Barracks.jpg" width="500">
+
+**Barracks** – *Rekrutiert Infanterie.*
+
+
+<img src="GameImgs/Fortress.jpg" width="500">
+
+**Fortress** – *Starkes Verteidigungsgebäude, erzeugt Elite-Einheiten.*
+
+
+## Ressourcen
+
+Nahrung
+
+<img src="GameImgs/Nahrung.jpg" width="500">
+
+Gesammelt durch Felder, Beeren, Tiere.
+
+
+
+
+
+<img src="GameImgs/Stein.jpg" width="500">
+Benötigt für Mauern, Festungen.
+
+Metall
+
+<img src="GameImgs/Metall.jpg.jpg" width="500">
+Wichtig für Elite-Einheiten und Forschung.
