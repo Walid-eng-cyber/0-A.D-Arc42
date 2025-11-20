@@ -1269,9 +1269,8 @@ Die folgende Tabelle gibt einen strukturierten Überblick über die zentralen te
 | **TS05**              | Nicht vollständig dokumentierte ECS-Komponenten      |
 
 
-# Glossar {#section-glossary}
-
-## 11.1 Einleitung
+# Glossar 
+## 12.1 Einleitung
 
 Das folgende Glossar erklärt zentrale Begriffe aus der Spielwelt und der technischen Architektur von 0 A.D..
 Es umfasst sowohl Bezeichnungen aus dem Bereich historischer Echtzeitstrategiespiele (z. B. Einheiten, Gebäude, Ressourcen) als auch technische Konzepte aus der Engine-, Simulations- und Rendering-Architektur.
@@ -1285,12 +1284,12 @@ Die Definitionen und Abbildungen sollen das Verständnis der Spielmechanik und d
 
 
 
-<img src="GameImgs/Spearman.jpg" width="500">
+<img src="GameImgs/Spearman.jpg" width="400">
 
 **Spearman** – *Nahkampfeinheit, effektiv gegen Kavallerie.*
 
 
-<img src="GameImgs/Swordman.jpg" width="500">
+<img src="GameImgs/Swordman.jpg" width="400">
 
 **Swordsman** – *Schwer gepanzerte Infanterie, stark im Nahkampf.*
 
@@ -1298,7 +1297,7 @@ Die Definitionen und Abbildungen sollen das Verständnis der Spielmechanik und d
 
 
 
-<img src="GameImgs/CavalrySpearman.jpg" width="500">
+<img src="GameImgs/CavalrySpearman.jpg" width="400">
 
 **Cavalry Spearman** – *Schnelle Anti-Infanterie-Einheit.*
 
@@ -1307,13 +1306,13 @@ Die Definitionen und Abbildungen sollen das Verständnis der Spielmechanik und d
 
 
 
-<img src="GameImgs/Catapult.jpg" width="500">
+<img src="GameImgs/Catapult.jpg" width="400">
 
 **Catapult** – *Effektiv gegen Gebäude.*
 
 
 
-<img src="GameImgs/Helden.jpg" width="500">
+<img src="GameImgs/Helden.jpg" width="400">
 
 **Hero Unit** – *Einzigartige Einheiten mit Auren und Spezialboni.*
 
@@ -1322,23 +1321,23 @@ Die Definitionen und Abbildungen sollen das Verständnis der Spielmechanik und d
 
 
 
-<img src="GameImgs/Basisgebäude.webp" width="500">
+<img src="GameImgs/Basisgebäude.webp" width="400">
 
 **Civic Center** – *Hauptgebäude, erzeugt Bürger und expandiert das Territorium.*
 
 
-<img src="GameImgs/House.jpg" width="500">
+<img src="GameImgs/House.jpg" width="400">
 
 **House** – *Erhöht Bevölkerungslimit.*
 
 
 
-<img src="GameImgs/Barracks.jpg" width="500">
+<img src="GameImgs/Barracks.jpg" width="400">
 
 **Barracks** – *Rekrutiert Infanterie.*
 
 
-<img src="GameImgs/Fortress.jpg" width="500">
+<img src="GameImgs/Fortress.jpg" width="400">
 
 **Fortress** – *Starkes Verteidigungsgebäude, erzeugt Elite-Einheiten.*
 
@@ -1347,18 +1346,40 @@ Die Definitionen und Abbildungen sollen das Verständnis der Spielmechanik und d
 
 Nahrung
 
-<img src="GameImgs/Nahrung.jpg" width="500">
+<img src="GameImgs/Nahrung.jpg" width="400">
 
 Gesammelt durch Felder, Beeren, Tiere.
 
-
-
-
-
-<img src="GameImgs/Stein.jpg" width="500">
+<img src="GameImgs/Stein.jpg" width="400">
 Benötigt für Mauern, Festungen.
 
-Metall
 
-<img src="GameImgs/Metall.jpg.jpg" width="500">
-Wichtig für Elite-Einheiten und Forschung.
+## 12.2 Begriffe
+
+| **Begriff**                        | **Definition**                                                                                                                                               |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **0 A.D.**                         | Open-Source-Echtzeitstrategiespiel, entwickelt von Wildfire Games. Ähnelt Age of Empires, aber ist vollständig modbar und community-getrieben.               |
+| **Engine Core**                    | Zentrales Steuersystem der Engine. Verwaltet Hauptspielschleife, Ereignisse, Ressourcen, Timing und Kommunikation zwischen Subsystemen.                      |
+| **ECS (Entity-Component-System)**  | Architekturmodell, das Spielobjekte (Entities) in reine Daten (Components) und Logikmodule (Systems) aufteilt. Garantiert hohe Performance und Flexibilität. |
+| **Entity (Entität)**               | Ein Spielobjekt im ECS-System, z. B. Einheit, Gebäude, Projektil. Besteht aus einer Sammlung von Komponenten.                                                |
+| **Component (Komponente)**         | Reiner Datenbehälter, der eine bestimmte Eigenschaft einer Entity beschreibt, z. B. Position, Gesundheit, Angriffswerte.                                     |
+| **System**                         | Logikmodul, das auf bestimmte Komponenten angewendet wird. Beispiele: MovementSystem, CombatSystem, ProductionSystem.                                        |
+| **Simulation Tick**                | Ein Logik-Update-Schritt der Simulation, in dem Commands verarbeitet und der Spielzustand aktualisiert wird.                                                 |
+| **Lockstep-Modell**                | Multiplayer-Synchronisationsmethode, bei der alle Clients dieselben Befehle verarbeiten und so einen identischen Spielzustand garantieren.                   |
+| **Desync (Desynchronisation)**     | Zustand, in dem Multiplayer-Clients unterschiedliche Simulationsergebnisse berechnen und das Spiel inkonsistent wird.                                        |
+| **Rendering Subsystem**            | Subsystem zur visuellen Darstellung der Spielwelt (OpenGL-basiert). Rendert Terrain, Einheiten, Objekte, Effekte.                                            |
+| **Audio Subsystem**                | Subsystem für Soundeffekte und Musik. Nutzt OpenAL für 3D-Audio.                                                                                             |
+| **GUI (Graphical User Interface)** | Benutzeroberfläche des Spiels: Menüs, HUD, Panels, Tooltips, Minimap. Basierend auf XML + JavaScript.                                                        |
+| **Mod / Modding**                  | Vom Benutzer erstellte Inhalte (Einheiten, Zivilisationen, Karten, Regeln, Skripte). In *0 A.D.* über XML/JSON + JS definiert.                               |
+| **Template**                       | XML-Datei, die Eigenschaften einer Einheit, eines Gebäudes oder Objekts beschreibt. Datengetriebener Ansatz.                                                 |
+| **Replay**                         | Aufzeichnung eines vollständigen Spiels in Form von Befehlslisten zur späteren Wiedergabe oder Fehlersuche.                                                  |
+| **Atlas Editor**                   | Offizieller Karten- und Szenarieneditor von *0 A.D.*. Ermöglicht das Erstellen von Maps ohne Programmierkenntnisse.                                          |
+| **Scripting API**                  | Schnittstelle zwischen JavaScript und Engine Core. Ermöglicht Zugriff auf Engine-Funktionen (Commands, Daten, GUI).                                          |
+| **OpenGL**                         | Cross-Plattform-Grafik-API, die für das Rendering in *0 A.D.* verwendet wird.                                                                                |
+| **OpenAL**                         | Cross-Plattform-Audio-API zur Wiedergabe von 3D-Sound.                                                                                                       |
+| **ENet**                           | Netzwerkbibliothek für zuverlässige UDP-Kommunikation, welche für Multiplayer verwendet wird.                                                                |
+| **Pathfinding**                    | Algorithmus zur Berechnung von Einheitenbewegungen zum Zielpunkt. In *0 A.D.* oft ein Performance-Bottleneck.                                                |
+| **LOD (Level of Detail)**          | Technik zur Darstellung von entfernten Objekten mit geringerer Detailtiefe, um Performance zu verbessern.                                                    |
+| **Sandboxing**                     | Sicherheitsmechanismus, der verhindert, dass modifizierte Scripts das System beschädigen können.                                                             |
+| **Tickrate**                       | Frequenz, mit der die Simulation pro Sekunde aktualisiert wird.                                                                                              |
+| **HUD (Heads-Up Display)**         | In-Game-Benutzeroberfläche, die Ressourcen, Einheiteninfos und Minimap anzeigt.                                                                              |
