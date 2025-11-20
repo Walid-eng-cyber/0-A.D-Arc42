@@ -388,415 +388,521 @@ Ein-/Ausgaben abbildet.
 
 **\<Mapping fachliche auf technische Schnittstellen\>**
 
-# Lösungsstrategie {#section-solution-strategy}
-
-:::::::::::: sidebar
-::: title
-:::
-
-:::: formalpara
-::: title
-Inhalt
-:::
-
-Kurzer Überblick über die grundlegenden Entscheidungen und
-Lösungsansätze, die Entwurf und Implementierung des Systems prägen.
-Hierzu gehören:
-::::
-
-- Technologieentscheidungen
-
-- Entscheidungen über die Top-Level-Zerlegung des Systems,
-  beispielsweise die Verwendung gesamthaft prägender Entwurfs- oder
-  Architekturmuster,
-
-- Entscheidungen zur Erreichung der wichtigsten Qualitätsanforderungen
-  sowie
-
-- relevante organisatorische Entscheidungen, beispielsweise für
-  bestimmte Entwicklungsprozesse oder Delegation bestimmter Aufgaben an
-  andere Stakeholder.
-
-:::: formalpara
-::: title
-Motivation
-:::
-
-Diese wichtigen Entscheidungen bilden wesentliche „Eckpfeiler" der
-Architektur. Von ihnen hängen viele weitere Entscheidungen oder
-Implementierungsregeln ab.
-::::
+# 4. Lösungsstrategie 
 
-:::: formalpara
-::: title
-Form
-:::
+#### Dieser Abschnitt enthält einen stark verdichteten Architekturüberblick. Eine Gegenüberstellung der wichtigsten Ziele und Lösungsansätze.
 
-Fassen Sie die zentralen Entwurfsentscheidungen **kurz** zusammen.
-Motivieren Sie, ausgehend von Aufgabenstellung, Qualitätszielen und
-Randbedingungen, was Sie entschieden haben und warum Sie so entschieden
-haben. Vermeiden Sie redundante Beschreibungen und verweisen Sie eher
-auf weitere Ausführungen in Folgeabschnitten.
-::::
+## 4.1. Einstieg
 
-:::: formalpara
-::: title
-Weiterführende Informationen
-:::
-
-Siehe [Lösungsstrategie](https://docs.arc42.org/section-4/) in der
-online-Dokumentation (auf Englisch!).
-::::
-::::::::::::
-
-# Bausteinsicht {#section-building-block-view}
-
-:::::::::::: sidebar
-::: title
-:::
 
-:::: formalpara
-::: title
-Inhalt
-:::
+| **Qualitätsziel**                                            | **Architektonische Ansätze zur Unterstützung**                                                                                                                                                                                                     |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Erweiterbarkeit** (neue Einheiten, Zivilisationen, Karten) | • Datengetriebenes Design: Spieleinhalte werden in XML / JSON beschrieben<br>• Klare Trennung zwischen Engine-Kern und Game-Content<br>• Modularer Asset-Loader und Skriptsystem<br>• Offene Modding-Schnittstelle für Community-Erweiterungen     |
+| **Performance** (viele Einheiten gleichzeitig)               | • Entity-Component-System (ECS) für effiziente Datenverarbeitung<br>• Engine in C++ implementiert<br>• Deterministische Simulation für stabile Synchronisation<br>• Level-of-Detail-Rendering (LOD) zur Entlastung der Grafikebene                 |
+| **Portabilität** (Windows, Linux, macOS)                     | • Nutzung plattformübergreifender Bibliotheken (OpenGL, SDL, Boost)<br>• Abstraktionsschichten für Grafik, Audio und Eingabe<br>• Minimale Betriebssystem-abhängigkeiten                                                                           |
+| **Wartbarkeit** (klare Struktur und leichte Änderbarkeit)    | • Schichtenarchitektur (Rendering / Simulation / Netzwerk klar getrennt)<br>• Modularer C++-Code mit definierten Schnittstellen<br>• Spiel-Logik (JavaScript) getrennt vom Engine-Kern<br>• Strukturierte Code-Reviews durch Open-Source-Community |
+| **Multiplayer-Zuverlässigkeit**                              | • Deterministische Simulation für alle Clients<br>• Synchronisation über Befehle statt Zustände<br>• Replay-System zur Fehleranalyse bei Desynchronisation                                                                                         |
+| **Modding-Freundlichkeit**                                   | • Separate „Mods“-Verzeichnisse überlagern Basisdaten<br>• Automatisches Laden von Benutzer-Inhalten beim Start<br>• Einfache Anpassbarkeit durch XML / JSON-Struktur                                                                              |
+| **Internationalisierung und Zugänglichkeit**                 | • Unicode-Unterstützung und Übersetzungsdateien (.po)<br>• Lokalisierte Benutzeroberfläche und Texte<br>• Layout-System unabhängig von Sprache und Schriftart                                                                                      |
+| **Sicherheit und Stabilität**                                | • Sandboxed Scripting über JavaScript-Engine<br>• Versionskontrolle und Community-Überprüfung von Beiträge<br>• Deterministische Netzwerkarchitektur reduziert Cheating-Risiken                                                                    |
 
-Die Bausteinsicht zeigt die statische Zerlegung des Systems in Bausteine
-(Module, Komponenten, Subsysteme, Klassen, Schnittstellen, Pakete,
-Bibliotheken, Frameworks, Schichten, Partitionen, Tiers, Funktionen,
-Makros, Operationen, Datenstrukturen, ...​) sowie deren Abhängigkeiten
-(Beziehungen, Assoziationen, ...​)
-::::
 
-Diese Sicht sollte in jeder Architekturdokumentation vorhanden sein. In
-der Analogie zum Hausbau bildet die Bausteinsicht den *Grundrissplan*.
+## 4.2. Aufbau 
 
-:::: formalpara
-::: title
-Motivation
-:::
+0 A.D ist als plattformuabhängige (cross-platform) C++/JavaScript-Anwendung realisiert.Es zerfällt grob in folgende Teile:
 
-Behalten Sie den Überblick über den Quellcode, indem Sie die statische
-Struktur des Systems durch Abstraktion verständlich machen.
-::::
+- **1. Game-/Simulation-Engine**
+  
+  Verantwortlich für Spielschleife, deteminitische Simulation, Entity-Component-System (ECS), Pathfinding, Kampf- und Wirtschaftlogik.
 
-Damit ermöglichen Sie Kommunikation auf abstrakterer Ebene, ohne zu
-viele Implementierungsdetails offenlegen zu müssen.
+- **2. Rendering und Audio Subsysteme**
+  
+  Zuständig für Darstellung der Spielwelt (Terrain, Einheiten, Effekte) sowie Wirdergabe von Sound und Musik, über plattformunabhängige Bibliotheken (z.B. OpenGL, OpenAL).
 
-:::: formalpara
-::: title
-Form
-:::
+- **3. Daten und Content Layer**
 
-Die Bausteinsicht ist eine hierarchische Sammlung von Blackboxen und
-Whiteboxen (siehe Abbildung unten) und deren Beschreibungen.
-::::
+  Beschreibt alles Spielinhalte (z.B. Einheiten, Gebäude, Karten, Items, etc.) in XML/JSON-Dateien sowie skriptbare Spiellogik in JavaScript, dient zugleicht als Grundlage für Modding.
 
-![Hierarchie in der Bausteinsicht](images/05_building_blocks-DE.png)
+- **4. Multiplayer / Networking Module**
 
-**Ebene 1** ist die Whitebox-Beschreibung des Gesamtsystems, zusammen
-mit Blackbox-Beschreibungen der darin enthaltenen Bausteine.
+  Implementiert  die deterministische, befehlsbasierte Synchronisation zwichen mehreren Spielern (Lockstep-Modell = alle Spieler führen die gleiche Simulation aus) sowie Replay-/Desync-Unterstützung.
 
-**Ebene 2** zoomt in einige Bausteine der Ebene 1 hinein. Sie enthält
-somit die Whitebox-Beschreibungen ausgewählter Bausteine der Ebene 1,
-jeweils zusammen mit Blackbox-Beschreibungen darin enthaltener
-Bausteine.
+- **5.  Graphical User Interface (GUI)**
 
-**Ebene 3** zoomt in einige Bausteine der Ebene 2 hinein, usw.
 
-:::: formalpara
-::: title
-Weiterführende Informationen
-:::
+    Menüsystem, Ingame-HUD, Auswahl und Befehlsoberfläche.
+    Die GUI interagiert über Skripte mut der Engine und präsentiert dem Spieler Daten.
 
-Siehe [Bausteinsicht](https://docs.arc42.org/section-5/) in der
-online-Dokumentation (auf Englisch!).
-::::
-::::::::::::
+- **6.Mod-/Ressourcen-Loader**
 
-## Whitebox Gesamtsystem {#_whitebox_gesamtsystem}
+  Lädt beim Start die Basisdaten und zusätzliche Mods aus getrennten Verzeichnissen und überlagert sie nach Priorität.
 
-:::: sidebar
-::: title
-:::
 
-An dieser Stelle beschreiben Sie die Zerlegung des Gesamtsystems anhand
-des nachfolgenden Whitebox-Templates. Dieses enthält:
+## 4.3 Spielstrategie / Integration  
 
-- Ein Übersichtsdiagramm
+Die Architektur von 0 A.D. folgt einer klaren Spielstrategie, die auf einem **deterministischen Simulationsmodell** und einer **datengetriebenen Trennung von  Engine und Spielinhalt** basiert.
 
-- die Begründung dieser Zerlegung
+Das System arbeitet in einem **kontinuerlichen Game Loop**, in dem Eingaber verarbeitet, Spielzustände aktualisiert und anschließend visualisiert werden.
 
-- Blackbox-Beschreibungen der hier enthaltenen Bausteine. Dafür haben
-  Sie verschiedene Optionen:
+- **1. Eingabe und Steuerung**
 
-  - in *einer* Tabelle, gibt einen kurzen und pragmatischen Überblick
-    über die enthaltenen Bausteine sowie deren Schnittstellen.
+  - Spielerinteraktion über Tastatur und Maus werden vom input-System erfasst und in Befehle übersetzt.
+  - In Single-Player mode werder Befehle direkt an  die Simulation gesendet, im Multiplayer mode werden sie zwischen allen Peers synschronisiert.
 
-  - als Liste von Blackbox-Beschreibungen der Bausteine, gemäß dem
-    Blackbox-Template (siehe unten). Diese Liste können Sie, je nach
-    Werkzeug, etwa in Form von Unterkapiteln (Text), Unter-Seiten (Wiki)
-    oder geschachtelten Elementen (Modellierungswerkzeug) darstellen.
+- **2. Simulation und Logik**
 
-- (optional:) wichtige Schnittstellen, die nicht bereits im
-  Blackbox-Template eines der Bausteine erläutert werden, aber für das
-  Verständnis der Whitebox von zentraler Bedeutung sind. Aufgrund der
-  vielfältigen Möglichkeiten oder Ausprägungen von Schnittstellen geben
-  wir hierzu kein weiteres Template vor. Im schlimmsten Fall müssen Sie
-  Syntax, Semantik, Protokolle, Fehlerverhalten, Restriktionen,
-  Versionen, Qualitätseigenschaften, notwendige Kompatibilitäten und
-  vieles mehr spezifizieren oder beschreiben. Im besten Fall kommen Sie
-  mit Beispielen oder einfachen Signaturen zurecht.
-::::
+  - Die deterministische Simulation verarbeitet alle Befehle im nächsten Tick.
 
-***\<Übersichtsdiagramm\>***
+  - Das Entity-Component-System aktualisiert Positionen, Zustände, Ressourcen und Einheitenverhalten.
 
-Begründung
+  - Skripte in JavaScript steuern KI, Wirtschaft und Kampflogik.
 
-:   *\<Erläuternder Text\>*
+- **3. Rendering und Audio**
 
-Enthaltene Bausteine
+  - Nach der Simulation werden die aktualisierten Spielobjekte vom Rendering-System (OpenGL) dargestellt.
 
-:   *\<Beschreibung der enthaltenen Bausteine (Blackboxen)\>*
+  - Das Audiosystem (OpenAL) spielt passende Geräusche und Musik ab.
 
-Wichtige Schnittstellen
+- **4. Multiplayer-Synchronisation**
 
-:   *\<Beschreibung wichtiger Schnittstellen\>*
+  - Alle Spieler führen dieselbe Simulation aus; nur Befehle werden über das Netzwerk ausgetauscht (Lockstep-Modell).
 
-:::: sidebar
-::: title
-:::
+  - Dies garantiert identische Ergebnisse auf allen Rechnern.
 
-Hier folgen jetzt Erläuterungen zu Blackboxen der Ebene 1.
+- **5. Modulare Datenfluss**
 
-Falls Sie die tabellarische Beschreibung wählen, so werden Blackboxen
-darin nur mit Name und Verantwortung nach folgendem Muster beschrieben:
+  - Inhalte (Units, Gebäude, Karten) werden beim Start aus XML- und Skriptdateien geladen.
 
-+----------------------+-----------------------------------------------+
-| **Name**             | **Verantwortung**                             |
-+======================+===============================================+
-| *\<Blackbox 1\>*     |  *\<Text\>*                                   |
-+----------------------+-----------------------------------------------+
-| *\<Blackbox 2\>*     |  *\<Text\>*                                   |
-+----------------------+-----------------------------------------------+
+  - Das Mod-System kann zusätzliche Daten überlagern und zur Laufzeit erweitern.
 
-Falls Sie die ausführliche Liste von Blackbox-Beschreibungen wählen,
-beschreiben Sie jede wichtige Blackbox in einem eigenen
-Blackbox-Template. Dessen Überschrift ist jeweils der Namen dieser
-Blackbox.
-::::
 
-### \<Name Blackbox 1\> {#_name_blackbox_1}
+## 4.4 Integration 
 
-:::: sidebar
-::: title
-:::
+0 A.D. verbindet seine internen Systeme mit der Außenwelt über drei zentrale Schnittstellen: das Betriebssystem, das Mehrspieler-Netzwerk und das dateibasierte Daten- und Mod-System.
+Die Spiel-Engine interagiert mit der Host-Plattform über plattformunabhängige Bibliotheken wie **SDL**, **OpenGL** und **OpenAL**, welche Eingabe, Darstellung und Audio einheitlich und betriebssystemübergreifend verarbeiten.
+Für die Mehrspielerkommunikation verwendet 0 A.D. die **ENet( ***ENet ist eine kleine, schnelle und Open-Source-Netzwerkbibliothek, die in C geschrieben wurde und eine zuverlässige Kommunikation über das UDP-Protokoll ermöglicht***)**-Netzwerkbibliothek, um Spielerbefehle zwischen den Teilnehmern im **Lockstep-Synchronisationsmodell** auszutauschen. Dieser Ansatz reduziert die Netzwerklast und stellt sicher, dass bei allen Clients identische Simulationsergebnisse entstehen.
+Alle Spieldaten und von der Community erstellten Erweiterungen werden über ein modulares Dateisystem verwaltet. Der **Mod-Loader** kombiniert beim Start des Spiels die Basisdaten dynamisch mit benutzerdefinierten Inhalten und Skripten, sodass neue Zivilisationen, Karten oder Spielmechaniken integriert werden können, ohne den Engine-Code zu verändern.
 
-Beschreiben Sie die \<Blackbox 1\> anhand des folgenden
-Blackbox-Templates:
+Durch diese Architektur besitzt 0 A.D. klar definierte Schnittstellen zum Betriebssystem, zum Netzwerk und zu benutzererstellten Inhalten. Dadurch bleibt der Kern der Engine unabhängig, stabil und leicht erweiterbar.
 
-- Zweck/Verantwortung
 
-- Schnittstelle(n), sofern diese nicht als eigenständige Beschreibungen
-  herausgezogen sind. Hierzu gehören eventuell auch Qualitäts- und
-  Leistungsmerkmale dieser Schnittstelle.
 
-- (Optional) Qualitäts-/Leistungsmerkmale der Blackbox, beispielsweise
-  Verfügbarkeit, Laufzeitverhalten o. Ä.
 
-- (Optional) Ablageort/Datei(en)
 
-- (Optional) Erfüllte Anforderungen, falls Sie Traceability zu
-  Anforderungen benötigen.
 
-- (Optional) Offene Punkte/Probleme/Risiken
-::::
 
-*\<Zweck/Verantwortung\>*
 
-*\<Schnittstelle(n)\>*
+<br> 
+<br> 
+<br>
+ 
+***High-level Integration Overview***
 
-*\<(Optional) Qualitäts-/Leistungsmerkmale\>*
+```
 
-*\<(Optional) Ablageort/Datei(en)\>*
+                                +-------------------------+
+                                |     Player (User)       |
+                                |  Mouse / Keyboard Input |
+                                +-----------+-------------+
+                                            |
+                                            v
+                                +-----------+-----------+
+                                |       0 A.D. Engine    |
+                                |------------------------|
+                                |   Input Manager        |
+                                |   Simulation Core      |
+                                |   Rendering / Audio    |
+                                +-----------+------------+
+                                            |
+                          +----------------+----------------+
+                          |                                 |
+                          v                                 v
+                        +----------+                  +-------------+
+                        |  Network | <--- Commands --->| Other Peers |
+                        | (ENet)   |                  |   (Players)  |
+                        +----------+                  +-------------+
+                                            |
+                                            v
+                                    +--------------+
+                                    |  Mod / Data  |
+                                    |  File System |
+                                    +--------------+
 
-*\<(Optional) Erfüllte Anforderungen\>*
+```
 
-*\<(optional) Offene Punkte/Probleme/Risiken\>*
 
-### \<Name Blackbox 2\> {#_name_blackbox_2}
+# Bausteinsicht 
 
-*\<Blackbox-Template\>*
+Dieser Abschnitt beschreibt die Zerlegung von ***0 A.D.*** in seine Hauptmodule, wie sie sich auch in der Struktur des Quellcodes widerspiegelt.
+Module der ersten Zerlegungsebene werden in ***0 A.D.*** als Subsysteme bezeichnet.
+Die → Bausteinsicht, Ebene 1 stellt diese Subsysteme einschließlich ihrer Hauptaufgaben und Schnittstellen dar.
 
-### \<Name Blackbox n\> {#_name_blackbox_n}
+Für einige Subsysteme, insbesondere das → Simulationssystem (***Entity-Component-System***), enthält dieser Abschnitt zusätzlich eine detailliertere Zerlegung in → Ebene 2.
 
-*\<Blackbox-Template\>*
 
-### \<Name Schnittstelle 1\> {#_name_schnittstelle_1}
+## 5.1 Überblick über die Subsysteme
 
-...​
+Dieser Abschnitt beschreibt die wichtigsten Subsysteme von 0 A.D. auf oberster Ebene.
+Die Architektur trennt den technischen Kern (Engine) von der Darstellung, den Spieldaten und der Benutzeroberfläche.
+Jedes Subsystem erfüllt eine klar definierte Aufgabe und kommuniziert über wohlstrukturierte Schnittstellen mit anderen Modulen.
 
-### \<Name Schnittstelle m\> {#_name_schnittstelle_m}
+| **Subsystem**                | **Kurzbeschreibung**                                                                                                                                                                                               |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Game Engine Core**         | Steuert die Hauptspielschleife, verwaltet Ereignisse und Ressourcen. Stellt grundlegende Dienste wie Logging, Konfiguration und Initialisierung bereit.                                                            |
+| **Simulationssystem (ECS)**  | Das zentrale Logiksystem des Spiels. Verwendet das **Entity-Component-System**-Prinzip, um Einheiten, Gebäude und Ressourcen zu verwalten. Beinhaltet Bewegungs-, Kampf-, Wirtschafts- und KI-Logik.               |
+| **Rendering-Subsystem**      | Verantwortlich für die visuelle Darstellung der Spielwelt. Rendert Gelände, Einheiten und Effekte mithilfe von **OpenGL**. Aktualisiert die Szene basierend auf dem Simulationszustand.                            |
+| **Audio-Subsystem**          | Steuert Soundeffekte und Hintergrundmusik. Nutzt **OpenAL** für räumliche Audiowiedergabe und sorgt für immersives Sounddesign.                                                                                    |
+| **Netzwerkmodul**            | Ermöglicht Mehrspieler-Partien über eine **deterministische Simulation** mit **Befehlssynchronisation (Lockstep-Modell)**. Zuständig für Sitzungsverwaltung, Replays und Fehlerbehandlung bei Desynchronisationen. |
+| **Benutzeroberfläche (GUI)** | Umfasst Menüs, das In-Game-HUD und Eingabeverarbeitung (Maus, Tastatur). Basierend auf **XML-Layouts** und **JavaScript-Logik**. Übersetzt Benutzereingaben in Simulationsbefehle.                                 |
+| **Daten- und Mod-System**    | Lädt alle Spieldaten wie Einheiten, Karten, Zivilisationen, Skripte und Texturen. Unterstützt ein modulares Dateisystem, das das einfache Hinzufügen und Aktivieren von Mods ermöglicht.                           |
+| **KI- und Scripting-Ebene**  | Implementiert computergesteuerte Gegner (z. B. Petra Bot) und Spielereignisse. Nutzt **JavaScript**, um KI-Verhalten, Strategien und Skripte für Gameplay zu definieren.                                           |
+| *Tabelle: Überblick über Subsysteme von 0 A.D.*     |                                            |
 
-## Ebene 2 {#_ebene_2}
 
-:::: sidebar
-::: title
-:::
+![Sequence Diagram](./SequenceDiagramSystemundSubsystem.png)
+*Dieses Sequenzdiagramm repräsentiert den kompletten Architekturfluss.*
 
-Beschreiben Sie den inneren Aufbau (einiger) Bausteine aus Ebene 1 als
-Whitebox.
+##  5.2  Game Engine 
 
-Welche Bausteine Ihres Systems Sie hier beschreiben, müssen Sie selbst
-entscheiden. Bitte stellen Sie dabei Relevanz vor Vollständigkeit.
-Skizzieren Sie wichtige, überraschende, riskante, komplexe oder
-besonders volatile Bausteine. Normale, einfache oder standardisierte
-Teile sollten Sie weglassen.
-::::
+Der Game Engine Core bildet das zentrale Steuersystem von *0 A.D.* und ist die Grundlage, auf der alle anderen Subsysteme aufbauen.
+Er koordiniert die **Ausführung der Hauptspielschleife**, verwaltet **Ressourcen und Ereignisse** und stellt **gemeinsame Dienste** für Simulation, Rendering, Audio, Netzwerk und GUI bereit.
+Darüber hinaus stellt der Engine-Kern eine umfangreiche **Skript-Schnittstelle (Engine API)** zur Verfügung, über die JavaScript-Code (z. B. aus der GUI, KI oder Simulation) direkt mit der C++-Engine interagieren kann.
 
-### Whitebox *\<Baustein 1\>* {#_whitebox_baustein_1}
 
-:::: sidebar
-::: title
-:::
+### 5.2.1 Verantwortlichkeiten
 
-...​zeigt das Innenleben von *Baustein 1*.
-::::
+1. **Hauptspielschleife**
 
-*\<Whitebox-Template\>*
+    Der Engine-Kern steuert die kontinuierlich laufende Hauptschleife des Spiels.
+    Jeder Schleifendurchlauf (Frame) führt mehrere Schritte aus:
 
-### Whitebox *\<Baustein 2\>* {#_whitebox_baustein_2}
+    - Verarbeitung von Eingaben aus GUI und Netzwerk
+    - Aktualisierung des Simulationssystems (Spielzustand und Logik)
+    - Weitergabe aktualisierter Daten an Rendering- und Audio-Subsysteme
+    - Verwaltung der Zeitschritte und Synchronisierung aller Subsysteme
+    - Hintergrundaufgaben wie Laden von Assets oder Empfang von Netzwerkbefehlen
 
-*\<Whitebox-Template\>*
+    Dadurch werden gleichmäßige Bildraten und eine stabile Ausführung des Spiels gewährleistet.
 
-...​
+2. **Initialisierung und Beendigung**
 
-### Whitebox *\<Baustein m\>* {#_whitebox_baustein_m}
+    Beim Start initialisiert der Engine-Kern alle Subsysteme, lädt Konfigurationsdateien und Ressourcen,
+    und richtet Rendering (OpenGL), Audio (OpenAL), Netzwerk (ENet) sowie Mod-Verzeichnisse ein.
+    Beim Beenden werden alle Ressourcen sauber freigegeben, um Speicherlecks oder Datenverluste zu vermeiden.
 
-*\<Whitebox-Template\>*
+3. **Ressourcen- und Ereignisverwaltung**
 
-## Ebene 3 {#_ebene_3}
+    Der Engine-Kern fungiert als zentrale Ereignis- und Ressourcenverwaltung.
+    Subsysteme kommunizieren über Ereignisse anstatt direkter Aufrufe.
+    Beispiel:
 
-:::: sidebar
-::: title
-:::
+    - Die Simulation löst ein Ereignis „Einheit zerstört“ aus → das Rendering zeigt eine Explosion → das Audio-System spielt den passenden Sound.
+    Zusätzlich verwaltet der Engine-Kern Caching und Zugriff auf Texturen, Modelle, Sounds und Skripte, um Ladezeiten zu reduzieren.
 
-Beschreiben Sie den inneren Aufbau (einiger) Bausteine aus Ebene 2 als
-Whitebox.
+4. **Plattform-Abstraktionsschicht**
 
-Bei tieferen Gliederungen der Architektur kopieren Sie diesen Teil von
-arc42 für die weiteren Ebenen.
-::::
+    Um 0 A.D. auf verschiedenen Betriebssystemen lauffähig zu machen, abstrahiert der Engine-Kern plattformspezifische Funktionen über Bibliotheken wie SDL oder Boost.
+    Dadurch werden Dateizugriffe, Eingabegeräte, Threads und Fenstererstellung unabhängig vom Betriebssystem gehandhabt.
 
-### Whitebox \<\_Baustein x.1\_\> {#_whitebox_baustein_x_1}
+5. **Zeit- und Synchronisationsmanagement**
 
-:::: sidebar
-::: title
-:::
+    Der Engine-Kern verwaltet konsistente Zeitwerte (Frame-Zeit, Simulationszeit, Delta-Zeit),
+    um sicherzustellen, dass Simulation, Rendering und Netzwerk-Ticks synchron laufen.
+    Das ist besonders wichtig für die Konsistenz im Mehrspielermodus.
 
-...​zeigt das Innenleben von *Baustein x.1*.
-::::
+6. **Logging, Debugging und Profiling**
+Der Engine-Kern stellt Infrastruktur zum Protokollieren, Debuggen und Profilieren bereit.
+Entwickler können während der Laufzeit Frame-Rate, Speicherverbrauch oder Simulationszeiten beobachten.
+Über Funktionen wie ProfileStart() und ProfileStop() kann auch aus JavaScript heraus Performance gemessen werden.
 
-*\<Whitebox-Template\>*
+### 5.2.2 Engine-API
+Die API besteht aus Hunderten von Funktionen, die sich in mehrere Gruppen einteilen lassen:
 
-### Whitebox \<\_Baustein x.2\_\> {#_whitebox_baustein_x_2}
+| **Kategorie**                    | **Beispielfunktionen**                                                      | **Zweck**                                                          |
+| -------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **Systemsteuerung**              | `Exit()`, `Crash()`, `GetEngineInfo()`, `GetBuildVersion()`                 | Kontrolle über Laufzeit, Debug-Informationen und Version           |
+| **Datei- und Datenzugriff**      | `FileExists()`, `ReadJSONFile()`, `ListDirectoryFiles()`                    | Zugriff auf Spieldaten und Konfigurationsdateien                   |
+| **Simulation & Gameplay**        | `PostCommand()`, `AddEntity()`, `DestroyEntity()`, `GetTemplate()`          | Senden und Verwalten von Spielbefehlen aus Skripten                |
+| **GUI-Steuerung**                | `GetGUIObjectByName()`, `OpenChildPage()`, `SetGUIScale()`, `PlayUISound()` | Kontrolle der Benutzeroberfläche und Anzeigeelemente               |
+| **Netzwerk**                     | `StartNetworkGame()`, `SendNetworkChat()`, `AssignNetworkPlayer()`          | Steuerung und Synchronisierung von Mehrspieler-Sitzungen           |
+| **Konfiguration & Mods**         | `ConfigDB_SaveValue()`, `GetAvailableMods()`, `SetModsAndRestartEngine()`   | Verwaltung von Konfigurationen und aktivierten Mods                |
+| **Internationalisierung (i18n)** | `Translate()`, `GetAllLocales()`, `SaveLocale()`                            | Übersetzungs- und Sprachunterstützung für GUI und Spieltexte       |
+| **Debugging & Profiling**        | `ProfileStart()`, `ProfileStop()`, `DumpSimState()`                         | Messung und Analyse von Laufzeitverhalten und Simulationszuständen |
 
-*\<Whitebox-Template\>*
+### 5.2.3 Beziehungen zu anderen Subsystemen
+| **Subsystem**           | **Beschreibung der Interaktion**                                                       |
+| ----------------------- | -------------------------------------------------------------------------------------- |
+| **Simulation (ECS)**    | Der Engine-Kern ruft regelmäßig Simulations-Updates auf und empfängt Statusänderungen. |
+| **Rendering**           | Erhält vom Engine-Kern aktuelle Simulationsdaten zur Darstellung.                      |
+| **Audio**               | Spielt Sounds basierend auf Ereignissen aus Simulation oder GUI ab.                    |
+| **Netzwerk**            | Tauscht Befehle und Synchronisations-Informationen über den Hauptloop aus.             |
+| **GUI**                 | Nutzt die Engine-API, um Eingaben zu verarbeiten und Oberflächenelemente zu steuern.   |
+| **Daten- & Mod-System** | Liefert Konfigurations- und Inhaltsdaten beim Start.                                   |
+## 5.3 Simulationssystem (ECS)
 
-### Whitebox \<\_Baustein y.1\_\> {#_whitebox_baustein_y_1}
+Simulationssystem ist für die gesamte Logik und den Zustand der Spielwelt verantwortlich — also für Einheiten, Gebäude, Ressourcen, Bewegungen, Kämpfe und wirtschaftliche Abläufe.
+Die Architektur des Systems basiert auf dem modernen Entwurfsmuster **Entity-Component-System (ECS)**, das hohe Flexibilität, Wiederverwendbarkeit und Performance ermöglicht.
 
-*\<Whitebox-Template\>*
+### 5.3.1 Verantwortlichkeiten
 
-# Laufzeitsicht {#section-runtime-view}
+1. **Verwaltung des Spielzustands**
 
-:::::::::::: sidebar
-::: title
-:::
+    Das Simulationssystem speichert und aktualisiert alle Informationen über die Spielwelt:
+    Positionen, Zustände, Eigentümer, Ressourcen, Trefferpunkte, Sichtweite usw.
+    Es bestimmt, wie sich Einheiten bewegen, wie sie interagieren, kämpfen oder produzieren.
 
-:::: formalpara
-::: title
-Inhalt
-:::
+2. **Echtzeit-Logik**
 
-Diese Sicht erklärt konkrete Abläufe und Beziehungen zwischen Bausteinen
-in Form von Szenarien aus den folgenden Bereichen:
-::::
+    In jeder Simulations-Tick (Logik-Frame) werden alle relevanten Komponenten aktualisiert.
+    Dadurch wird das Verhalten der Spielobjekte bestimmt, z. B. Pfadfindung, Kampfentscheidungen, Baufortschritt oder Ressourcenabbau.
 
-- Wichtige Abläufe oder *Features*: Wie führen die Bausteine der
-  Architektur die wichtigsten Abläufe durch?
+3. **Synchronisation mit Netzwerk und Engine**
 
-- Interaktionen an kritischen externen Schnittstellen: Wie arbeiten
-  Bausteine mit Nutzern und Nachbarsystemen zusammen?
+    Die Simulation erhält Befehle von der Benutzeroberfläche oder vom Netzwerkmodul
+    und überträgt den aktualisierten Spielzustand an das Rendering- und Audio-Subsystem.
+    Im Mehrspielermodus sorgt eine deterministische Simulation dafür, dass alle Clients denselben Spielverlauf haben.
 
-- Betrieb und Administration: Inbetriebnahme, Start, Stop.
+4. **Ereignissteuerung und Messaging**
 
-- Fehler- und Ausnahmeszenarien
+    Die Kommunikation innerhalb der Simulation erfolgt über Nachrichten (Events).
+    Beispiel: Eine Einheit stirbt → das System sendet eine Nachricht „EntityDestroyed“ → andere Komponenten reagieren darauf (z. B. Soundeffekt oder Punktestand-Update).
 
-Anmerkung: Das Kriterium für die Auswahl der möglichen Szenarien (d.h.
-Abläufe) des Systems ist deren Architekturrelevanz. Es geht nicht darum,
-möglichst viele Abläufe darzustellen, sondern eine angemessene Auswahl
-zu dokumentieren.
+5. **Erweiterbarkeit durch Daten und Skripte**
 
-:::: formalpara
-::: title
-Motivation
-:::
+    Spielinhalte (z. B. Einheiten oder Gebäude) sind datengetrieben in XML/JSON beschrieben
+    und können mit JavaScript-Skripten um spezifische Logik erweitert werden,
+    ohne den C++-Code zu verändern.
 
-Sie sollten verstehen, wie (Instanzen von) Bausteine(n) Ihres Systems
-ihre jeweiligen Aufgaben erfüllen und zur Laufzeit miteinander
-kommunizieren.
-::::
+### 5.3.2 ECS
+Das Simulationssystem folgt dem ECS-Prinzip und ist in drei zentrale Strukturen gegliedert:
+| **Element**                | **Beschreibung**                                                                                                                                                                                                                       |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Entity (Entität)**       | Repräsentiert ein einzelnes Spielobjekt – z. B. eine Einheit, ein Gebäude oder ein Projektil. Jede Entität besitzt eine eindeutige ID und besteht aus einer Menge von Komponenten.                                                     |
+| **Component (Komponente)** | Kapselt Daten, die eine bestimmte Eigenschaft oder Fähigkeit beschreiben, z. B. Position, Gesundheit, Angriffskraft, Produktion oder Sichtweite. Komponenten enthalten **keine Logik**, nur Zustand.                                   |
+| **System**                 | Implementiert die Logik, die auf Komponenten angewendet wird. Jedes System ist für einen bestimmten Aspekt zuständig, z. B. Bewegung, Kampf, Produktion, KI oder Sichtberechnung. Systeme werden in jedem Simulations-Tick ausgeführt. |
 
-Nutzen Sie diese Szenarien in der Dokumentation hauptsächlich für eine
-verständlichere Kommunikation mit denjenigen Stakeholdern, die die
-statischen Modelle (z.B. Bausteinsicht, Verteilungssicht) weniger
-verständlich finden.
+### 5.3.3 Komponenten und Systeme
 
-:::: formalpara
-::: title
-Form
-:::
+| **Komponenten**                       | **Beispielhafte Systeme**                                       |
+| ------------------------------------- | --------------------------------------------------------------- |
+| `Position`, `Velocity`, `Orientation` | Bewegungssystem (aktualisiert Position und Richtung)            |
+| `Health`, `Attack`, `Armor`           | Kampfsystem (führt Angriffe aus und berechnet Schaden)          |
+| `ResourceGatherer`, `Storage`         | Wirtschaftssystem (sammelt Ressourcen, verwaltet Lagerbestände) |
+| `ProductionQueue`, `Technology`       | Produktions-/Forschungssystem                                   |
+| `Vision`, `Ownership`, `Formation`    | KI- und Sichtsysteme                                            |
+| `Decay`, `Obstruction`, `Projectile`  | Umwelt- und Kollisionssysteme                                   |
 
-Für die Beschreibung von Szenarien gibt es zahlreiche
-Ausdrucksmöglichkeiten. Nutzen Sie beispielsweise:
-::::
+## 5.4 Rendering Subsystem
 
-- Nummerierte Schrittfolgen oder Aufzählungen in Umgangssprache
+Das **Rendering-Subsystem** ist für **grafische Darstellung der Spielwelt** verantwortlich.
+Es bildet die Schnittstelle zwischen der Simulationslogik und der visuellen Ausgabe auf dem Bildschirm. Das System verarbeit die von der Simulatiuon bereitgestellten Datem (z.b Position, Animationen uzw.) und rendert daraus eine realistische , dynamische 3D-Spielwelt.
+Das Rendering erfolgt plattformübergreifend über **OpenGl** und nutzt moderne Techsniken wie Schader , LOD(Leveld of Detail) und Culling.
 
-- Aktivitäts- oder Flussdiagramme
+### 5.4.1 Verantwortlichkeiten
 
-- Sequenzdiagramme
+- 1. **Darstellung der Spielwelt**
 
-- BPMN (Geschäftsprozessmodell und -notation) oder EPKs
-  (Ereignis-Prozessketten)
+      Das Rendering-System übersetzt den abstrakten Spielzustand aus der Simulation (z. B. Einheiten, Gebäude, Gelände, Effekte) in sichtbare 3D-Objekte.
+      Es verwaltet die Szenegraph-Struktur, in der alle darzustellenden Elemente organisiert sind.
 
-- Zustandsautomaten
+- 2. **Kamerasteuerung und Sichtfeld**
 
-- ...​
+      Die Kamera kann frei bewegt, rotiert und gezoomt werden.
+      Das Rendering-System berechnet, welche Objekte im aktuellen Sichtfeld (Frustum) liegen, und rendert nur diese (Frustum Culling).
 
-:::: formalpara
-::: title
-Weiterführende Informationen
-:::
+- 3. **Beleuchtung, Schatten und Effekte**
 
-Siehe [Laufzeitsicht](https://docs.arc42.org/section-6/) in der
-online-Dokumentation (auf Englisch!).
-::::
-::::::::::::
+      Das System nutzt Shader-basierte Beleuchtung, dynamische Schatten und Partikeleffekte, um eine realistische Spielumgebung zu erzeugen.
+      Wetter-, Feuer- und Explosionseffekte werden ebenfalls hier gesteuert.
 
-## *\<Bezeichnung Laufzeitszenario 1\>* {#_bezeichnung_laufzeitszenario_1}
+- 4. **Level of Detail (LOD)**
 
-- \<hier Laufzeitdiagramm oder Ablaufbeschreibung einfügen\>
+      Abhängig von der Entfernung zur Kamera rendert das System Modelle mit unterschiedlicher Detailtiefe, um Performance zu optimieren.
 
-- \<hier Besonderheiten bei dem Zusammenspiel der Bausteine in diesem
-  Szenario erläutern\>
+- 5. **UI-Overlay**
 
-## *\<Bezeichnung Laufzeitszenario 2\>* {#_bezeichnung_laufzeitszenario_2}
+      Neben der 3D-Welt rendert das Subsystem auch 2D-Overlays (z. B. Auswahlrahmen, Lebensbalken oder Minimap) über der Hauptszene.
 
-...​
+- 6. **Performance und Optimierung**
 
-## *\<Bezeichnung Laufzeitszenario n\>* {#_bezeichnung_laufzeitszenario_n}
+      Das Rendering ist auf hohe Performance ausgelegt und nutzt Techniken wie Instancing, Textur-Atlas, Batch-Rendering und Occlusion Culling.
+      Frame-Timing und GPU-Performance werden über das Engine-Profiling-System überwacht.
 
-...​
+
+### 5.4.2 Aufbau 
+
+Das Rendering-Subsystem besteht aus mehreren logischen Komponenten beispielweise :
+
+| **Komponente**        | **Beschreibung**                                                                                |
+| --------------------- | ----------------------------------------------------------------------------------------------- |
+| **Scene Graph**       | Hierarchische Datenstruktur, die alle sichtbaren Objekte (Modelle, Effekte, Gelände) verwaltet. |
+| **Terrain Renderer**  | Zeichnet Gelände, Höhenkarten, Texturen und Übergänge zwischen Biomen.                          |
+| **Model Renderer**    | Rendert Einheiten, Gebäude und Objekte mit Animationen.                                         |
+| **Water Renderer**    | Simuliert Wasser, Reflexionen und Wellenbewegungen.                                             |
+| **Particle Renderer** | Verantwortlich für Effekte wie Rauch, Feuer, Staub oder Projektilspuren.                        |
+| **Shader Manager**    | Lädt und verwaltet GPU-Shader (Beleuchtung, Transparenz, Texturen).                             |
+| **Post-Processing**   | Fügt Nachbearbeitungseffekte hinzu (z. B. Bloom, Tiefenschärfe, Farbkorrektur).                 |
+
+## 5.5 Audio Subsystem
+
+Das **Audio-Subsystem** ist für die gesamte akustische Darstellung in 0 A.D verantwortlich.
+Es verarbeitet Soundeffekte, Umgebungsgeräusche und Hintergrundmusik und sorgt dafür, dass akustische Ereignisse synchron zur Simulation und Darstellung ausgefürht werden.
+Das System basiert auf der plattformübergreifenden Audio-Bibliothek **OpenAL**, welche 3D-Sound, Positionsberechnung und räumliche Audioeffekte unterstützt.
+
+### 5.5.1 Verantwortlichkeiten
+
+- 1. **Abspielen von Soundeffekten**
+
+      Das Audio-System spielt Ereignissounds ab, wie Angriffe, Treffer, Gebäudefertigstellungen oder das Fällen eines Baumes.
+      Diese Sounds werden durch Nachrichten aus der Simulation ausgelöst.
+
+- 2. **Wiedergabe von Musik und Ambient-Sounds**
+
+      Hintergrundmusik und Umgebungsgeräusche (Wind, Wasser, Tiere) laufen parallel zum Spielgeschehen und werden im Audio-Subsystem verwaltet.
+      Es steuert Lautstärke, Übergänge und Wiedergabelisten.
+
+- 3. **Räumliches (3D-)Audio**
+
+      Die Position der Kamera und der Entitäten bestimmt, wie laut und aus welcher Richtung ein Sound abgespielt wird.
+      Das System berechnet hierfür Lautstärkeabfälle, Panning und Filter, um ein realistisches Raumgefühl zu erzeugen.
+
+- 4. **Audio-Mixing und Lautstärkekontrolle**
+
+      Das System mischt unterschiedliche Audiokanäle (Effekte, Musik, Interface-Sounds) und bietet globale Regler für Spieler und Entwickler.
+
+- 5. **Synchronisierung mit Simulation und Rendering**
+
+      Die Audioausgabe reagiert auf Änderungen im Spielzustand, z. B.:
+
+      - Einheit stirbt → Todesgeräusch
+      - Projektil trifft → Aufprallsound
+      - Gebäude startet Produktion → akustischer Hinweis
+
+- 6. **Performance-Verwaltung**
+
+      Das Audio-System arbeitet größtenteils asynchron und nutzt eigene Puffer, damit es die Framerate oder den Simulationsfluss nicht beeinflusst.
+
+### 5.5.2 Aufbau
+
+Das Audio-Subsystem besteht aus mehreren Komponenten :
+
+| **Komponente**              | **Beschreibung**                                                                           |
+| --------------------------- | ------------------------------------------------------------------------------------------ |
+| **Sound Manager**           | Verwalten aller Soundquellen; steuert das Laden, Abspielen und Stoppen von Sounds.         |
+| **Music Manager**           | Verwaltung von Hintergrundmusik, Wiedergabelisten und Übergängen.                          |
+| **Audio Source Controller** | Repräsentiert eine einzelne Tonquelle (z. B. eine Einheit, Explosion oder Umgebungssound). |
+| **Listener**                | Entspricht der Kamera; bestimmt, wie der Spieler den Ton wahrnimmt.                        |
+| **OpenAL Backend**          | Bindings zu OpenAL für räumliches Audio und Hardwarebeschleunigung.                        |
+
+## 5.6 Benutzeroberfläche
+
+Die **Benutzeroberfläche (GUI)** von 0 A.D. ist für alle Interaktionen zwischen Spieler und Spiel zuständig.
+Sie umfasst sowohl das **Hauptmenü**, die **Spielkonfiguration**, die **Lobby**, als auch das **In-Game-HUD**, über das der Spieler Einheiten auswählt, Befehle erteilt und Informationen über den Spielzustand erhält.
+Die GUI wird überwiegend über **XML-Layout-Dateien und JavaScript-Skripte** definiert und ist somit vollständig daten- und skriptabhängig aufgebaut.
+Dadurch ist sie besonders flexibel, leicht modifizierbar und gut erweiterbar.
+
+
+### 5.6.1 verantwortlichkeiten
+
+- 1. **Verarbeitung von Benutzereingaben**
+
+      Die GUI interpretiert alle Eingaben des Spielers:
+
+      - Mausaktionen (Klicken, Ziehen, Auswahlrechtecke)
+
+      - Tastatureingaben (Hotkeys, Kamerasteuerung)
+
+      - Menüinteraktionen
+
+      - Diese Eingaben werden in Simulationsbefehle übersetzt, die an die ECS-Simulation weitergeleitet werden.
+
+- 2. **Anzeige von Spielinformationen**
+
+      Die GUI zeigt alle relevanten Daten an, wie:
+
+      - Ressourcen und Spielstatistiken
+
+      - Ausgewählte Einheiten und deren Attribute
+
+      - Minimap
+
+      - Bau- und Produktionsmenüs
+
+      - Tooltips, Befehlsleisten und Einheitenaktionstasten
+      Diese Informationen werden dynamisch aus der Simulation und dem Engine-Kern abgerufen.
+    
+- 3. **Navigieren durch Menüs und Spielmodi**
+
+      Die GUI verwaltet Menülogik, z. B.:
+
+      - Startmenü
+
+      - Optionen (Audio, Grafik, Steuerung)
+
+      - Kampagnen- und Szenariomenüs
+
+      - Multiplayer-Lobby
+
+      - Lade-/Speichermodi
+
+- 4. **Kommunikation mit der Engine über die Engine-API**
+
+      Die GUI nutzt viele Funktionen der Engine-API (z. B. Engine.GetGUIObjectByName, Engine.PickEntityAtPoint, Engine.PostCommand).
+      Dadurch ruft sie sowohl Simulationsbefehle als auch Engine-Funktionen ab, ohne C++-Code zu berühren.
+
+- 5. **Darstellung von Statusänderungen**
+
+      Die GUI reagiert auf Spielereignisse:
+
+      - Eine Einheit wird verletzt → Gesundheitsbalken ändern sich
+
+      - Ein Gebäude wird fertiggestellt → Icons aktualisieren sich
+
+      - Eine neue Technologie wird erforscht → Tooltip + Effekte
+      Die GUI ist eng mit dem Event-System des Engine-Kerns verbunden.
+
+
+### 5.6.2 Aufbau
+
+Die GUI besteht aus meheren klar abgegrenzten Komponenten:
+
+| **Komponente**             | **Beschreibung**                                                                            |
+| -------------------------- | ------------------------------------------------------------------------------------------- |
+| **XML-Layout-Dateien**     | Definieren die Struktur aller GUI-Elemente: Buttons, Panels, Tooltips, Frames.              |
+| **JavaScript-Logik**       | Steuert dynamische Inhalte, reagiert auf Eingaben und führt Engine-API-Aufrufe aus.         |
+| **GUI Renderer**           | Rendert 2D-Overlays und HUD-Elemente über der 3D-Spielszene.                                |
+| **GUI Objekte / Controls** | Standard-Steuerelemente wie Buttons, Listen, Rahmen, Anzeigen.                              |
+| **Interface Manager**      | Verwaltet GUI-Seiten (z. B. Menü → Spiel → Pausemenü) und sorgt für reibungslose Übergänge. |
+
+
+# Laufzeitsicht 
+
+Diese Sicht beschreibt im Gegensatz zur statischen Bausteinsicht die dynamischen Abläufe zur Laufzeit des Systems.Im Fokus steht nicht, aus welchen Modulen 0 A.D. besteht, sondern wie diese Module in typischen Szenarien zusammenarbeiten.
+
+## 6.1 Beispiele für Szenarien
+
+### 6.1.1 Beispiel 1: Spieler gibt einer Einheit einen Bewegungsbefehl (Move Command)
+
+
+Dieses Diagramm zeigt das Zusammenspiel von **GUI** → **Engine Core** → **Simulation (ECS)** → **Rendering**.
+
+![Move Command](GUI-Engine-Sim.png)
+
+Der Benutzer löst eine Aktion aus, die GUI erzeugt einen passenden Command, dieser wird durch den Engine Core an die Simulation übergeben und nach Ausführung visuell dargestellt.
+### 6.1.2 Beispiel 2: Multiplayer Lockstep – alle Clients synchronisieren Kommandos
+
+![Lockstep](MultiplayerLockstep.png)
+
+Hier wird gezeigt, wie 0 A.D. das deterministische Lockstep-Netzwerkmodell umsetzt:
+Nach einem Spielbefehl werden die Commands über das Netzwerk an alle Clients verteilt.
+Erst wenn alle Spieler denselben Befehl empfangen haben, wird der Simulations-Tick ausgeführt.
+
+### 6.1.3 Beispiel 3: Start eine Spiels - Map laden
+
+![StartGame](Startthegame.png)
+
+Dieses Diagramm beschreibt, wie beim Start eines Spiels die GUI den Engine Core anweist,
+die notwendigen Ressourcen zu laden, die Simulation zu initialisieren und anschließend die Darstellung einzuleiten.
 
 # Verteilungssicht {#section-deployment-view}
 
@@ -1095,299 +1201,185 @@ Beispiele zum Thema ADR.
 ::::
 ::::::::::::
 
-# Qualitätsanforderungen {#section-quality-scenarios}
-
-:::::::::: sidebar
-::: title
-:::
-
-:::: formalpara
-::: title
-Inhalt
-:::
-
-Dieser Abschnitt enthält alle relevanten Qualitätsanforderungen.
-::::
-
-Die wichtigsten davon haben Sie bereits in Abschnitt 1.2
-(Qualitätsziele) hervorgehoben, daher soll hier nur auf sie verwiesen
-werden. In diesem Abschnitt 10 sollten Sie auch Qualitätsanforderungen
-mit geringerer Bedeutung erfassen, deren Nichterfüllung keine großen
-Risiken birgt (die aber *nice-to-have* sein könnten).
-
-:::: formalpara
-::: title
-Motivation
-:::
-
-Weil Qualitätsanforderungen die Architekturentscheidungen oft maßgeblich
-beeinflussen, sollten Sie die für Ihre Stakeholder relevanten
-Qualitätsanforderungen kennen, möglichst konkret und operationalisiert.
-::::
-
-<div>
-
-::: title
-Weiterführende Informationen
-:::
-
-- Siehe [Qualitätsanforderungen](https://docs.arc42.org/section-10/) in
-  der online-Dokumentation (auf Englisch!).
-
-- Siehe auch das ausführliche [Q42 Qualitätsmodell auf
-  https://quality.arc42.org](https://quality.arc42.org).
-
-</div>
-::::::::::
-
-## Übersicht der Qualitätsanforderungen {#_übersicht_der_qualitätsanforderungen}
-
-:::::::::: sidebar
-::: title
-:::
-
-:::: formalpara
-::: title
-Inhalt
-:::
+# Qualitätsanforderungen 
 
-Eine Übersicht oder Zusammenfassung der Qualitätsanforderungen.
-::::
+## 10.1 Qualitätsbaum
 
-:::: formalpara
-::: title
-Motivation
-:::
+Das folgende Bild gibt in Form eines sogenannten Qualitätsbaumes  einen Überblick über die relevanten Qualitätsmerkmale und ordnet ihnen Szenarien als Beispiele zu. Die Qualitätsziele sind in der Abbildung ebenfalls enthalten und verweisen jeweils auf die Szenarien, welche sie illustrieren.
 
-Oft stößt man auf Dutzende (oder sogar Hunderte) von detaillierten
-Qualitätsanforderungen für ein System. In diesem Abschnitt sollten Sie
-versuchen, sie zusammenzufassen, z. B. durch die Beschreibung von
-Kategorien oder Themen (wie z.B. von [ISO
-25010:2023](https://www.iso.org/obp/ui/#iso:std:iso-iec:25010:ed-2:v1:en)
-oder [Q42](https://quality.arc42.org) vorgeschlagen).
-::::
+![Qualitätsbaum](Qualitätanforderungen.png)
+## 10.2 Qualitätsszenarien
 
-Wenn diese Kurzbeschreibungen oder Zusammenfassungen bereits präzise,
-spezifisch und messbar sind, können Sie Abschnitt 10.2 auslassen.
+Die Anfangsbuchstaben der Bezeichner (IDs) der Szenarien in der folgenden Tabelle stehen jeweils für das übergeordnete Qualitätsmerkmal,  M beispielsweise für Erweiterbarkeit. Die Bezeichner finden auch im Qualitätsbaum Verwendung. Nicht immer lassen sich die Szenarien eindeutig einem Merkmal zuordnen. Sie treten daher mitunter mehrmals im Qualitätsbaum auf.
 
-:::: formalpara
-::: title
-Form
-:::
 
-Verwenden Sie eine einfache Tabelle, in der jede Zeile eine Kategorie
-oder ein Thema und eine kurze Beschreibung der Qualitätsanforderung
-enthält. Alternativ können Sie auch eine Mindmap verwenden, um diese
-Qualitätsanforderungen zu strukturieren. In der Literatur (insb.
-\[Bass+21\]) ist die Idee eines *Quality Attribute Utility Tree* (auf
-Deutsch manchmal kurz als *Qualitätsbaum* bezeichnet) beschrieben
-worden, der den Oberbegriff „Qualität" als Wurzel hat und eine
-baumartige Verfeinerung des Begriffs „Qualität" verwendet.
-::::
-::::::::::
+| **Qualitätsbereich**             | **ID**  | **Qualitätsszenario (Stimulus, Kontext, Reaktion, Messkriterium)**                                                                                                                               |
+| -------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Erweiterbarkeit / Modding**    | **M01** | *Stimulus:* Modder fügt eine neue Zivilisation hinzu. *Kontext:* Keine Engine-Codeänderung. *Reaktion:* Engine lädt Templates. *Messkriterium:* Zivilisation erscheint im Menü und ist spielbar. |
+|                                  | **M02** | *Stimulus:* Neue XML/JSON-Datei wird erstellt. *Kontext:* Spielstart. *Reaktion:* Engine liest Datei korrekt. *Messkriterium:* Einheit erscheint ohne Codeänderung im Spiel.                     |
+|                                  | **M03** | *Stimulus:* Neues JavaScript-Script wird hinzugefügt. *Kontext:* Engine startet. *Reaktion:* Script läuft in Sandbox. *Messkriterium:* Funktioniert ohne Engine-Modifikation.                    |
+| **Performance / Effizienz**      | **P01** | *Stimulus:* 400 Einheiten aktiv. *Kontext:* Standard-Hardware. *Reaktion:* Simulation verarbeitet alle. *Messkriterium:* Mindestens 30 FPS.                                                      |
+|                                  | **P02** | *Stimulus:* Große Massenschlacht. *Kontext:* Viele Effekte. *Reaktion:* Rendering optimiert. *Messkriterium:* FPS bleibt > 25 FPS.                                                               |
+|                                  | **P03** | *Stimulus:* Spielerbefehl wird ausgeführt. *Kontext:* Hochlastphase. *Reaktion:* Engine verarbeitet sofort. *Messkriterium:* < 150 ms Verzögerung.                                               |
+|                                  | **P04** | *Stimulus:* Viele ECS-Komponenten verändern sich. *Kontext:* Simulations-Tick. *Reaktion:* ECS verarbeitet effizient. *Messkriterium:* Tick < 60 ms.                                             |
+| **Multiplayer-Zuverlässigkeit**  | **N01** | *Stimulus:* Spieler senden gleichzeitig Befehle. *Kontext:* Lockstep. *Reaktion:* Gleichzeitige Tick-Ausführung. *Messkriterium:* GameState identisch bei allen Clients.                         |
+|                                  | **N02** | *Stimulus:* Netzwerk-Lag. *Kontext:* Multiplayer-Spiel. *Reaktion:* Engine puffert Befehle. *Messkriterium:* Kein Desync.                                                                        |
+|                                  | **N03** | *Stimulus:* Replay wird geladen. *Kontext:* Gespeicherte Befehle. *Reaktion:* Simulation rekonstruiert Match. *Messkriterium:* 100% Identisch zur Originalpartie.                                |
+| **Wartbarkeit**                  | **W01** | *Stimulus:* Neues Subsystem wird hinzugefügt. *Kontext:* Modulare Architektur. *Reaktion:* Engine integriert über Interfaces. *Messkriterium:* Keine Änderungen an anderen Subsystemen nötig.    |
+|                                  | **W02** | *Stimulus:* Entwickler schreibt Unit-Test. *Kontext:* Subsystem-isolierung. *Reaktion:* Test läuft ohne Abhängigkeiten. *Messkriterium:* Komponente isoliert testbar.                            |
+|                                  | **W03** | *Stimulus:* Entwickler liest ECS-Komponenten. *Kontext:* Neue Fähigkeit. *Reaktion:* Leicht verständlich. *Messkriterium:* < 10 Minuten Einlernzeit.                                             |
+| **Portabilität**                 | **T01** | *Stimulus:* Spielstart auf verschiedenen OS. *Kontext:* Gleiches Build. *Reaktion:* Engine initialisiert erfolgreich. *Messkriterium:* Keine OS-spezifischen Fehler.                             |
+|                                  | **T02** | *Stimulus:* Update von OpenGL/SDL. *Kontext:* Engine nutzt abstrahierte APIs. *Reaktion:* Läuft ohne Änderungen. *Messkriterium:* Keine Inkompatibilitäten.                                      |
+|                                  | **T03** | *Stimulus:* OS hat andere Datei-API. *Kontext:* Engine nutzt FS-Abstraktion. *Reaktion:* Einheitliches Verhalten. *Messkriterium:* Keine Plattformbugs.                                          |
+| **Internationalisierung (I18N)** | **I01** | *Stimulus:* Sprachwechsel im Menü. *Kontext:* Spiel läuft. *Reaktion:* Texte laden neu. *Messkriterium:* < 1 Sekunde Reaktionszeit.                                                              |
+|                                  | **I02** | *Stimulus:* Anzeige chinesischer Schrift. *Kontext:* GUI aktiv. *Reaktion:* Engine rendert Unicode korrekt. *Messkriterium:* Keine Darstellungsfehler.                                           |
+|                                  | **I03** | *Stimulus:* Mod liefert neue .po-Dateien. *Kontext:* Spielstart. *Reaktion:* Engine lädt neue Strings. *Messkriterium:* Alle Texte korrekt sichtbar.                                             |
+| **Benutzbarkeit**                | **U01** | *Stimulus:* Spieler wählt Einheit im Kampf. *Kontext:* Viele Entities. *Reaktion:* HUD aktualisiert schnell. *Messkriterium:* < 200 ms.                                                          |
+|                                  | **U02** | *Stimulus:* Ressourcen ändern sich. *Kontext:* HUD aktiv. *Reaktion:* GUI aktualisiert Anzeige. *Messkriterium:* < 100 ms.                                                                       |
+|                                  | **U03** | *Stimulus:* Neuer Spieler startet Tutorial. *Kontext:* Standard-GUI. *Reaktion:* Eindeutige Anleitungen. *Messkriterium:* Spieler versteht Grundlagen in < 5 Minuten.                            |
+| **Stabilität & Sicherheit**      | **S01** | *Stimulus:* JavaScript-Mod enthält Fehler. *Kontext:* Engine lädt Mods. *Reaktion:* Sandbox blockiert fehlerhaften Code. *Messkriterium:* Kein Absturz.                                          |
+|                                  | **S02** | *Stimulus:* Textur fehlt. *Kontext:* Map-Ladevorgang. *Reaktion:* Engine loggt Warnung. *Messkriterium:* Spiel läuft weiter.                                                                     |
+|                                  | **S03** | *Stimulus:* XML ist ungültig. *Kontext:* Spielstart. *Reaktion:* Engine meldet Fehler. *Messkriterium:* Engine bleibt stabil.                                                                    |
 
-## Qualitätsszenarien {#_qualitätsszenarien}
 
-:::::::::::: sidebar
-::: title
-:::
+# Risiken und technische Schulden 
 
-:::: formalpara
-::: title
-Inhalt
-:::
+Die folgende Tabelle gibt einen strukturierten Überblick über die zentralen technischen und architektonischen Risiken von 0 A.D.
 
-Qualitätsszenarien konkretisieren Qualitätsanforderungen und ermöglichen
-es zu entscheiden, ob sie erfüllt sind (im Sinne von
-Akzeptanzkriterien). Stellen Sie sicher, dass Ihre Szenarien spezifisch
-und messbar sind.
-::::
+| **Risiko-ID** | **Beschreibung**                                                                                              |
+| ------------- | ------------------------------------------------------------------------------------------------------------- |
+| **R01**       | Hohe Komplexität des ECS-Systems erschwert Debugging und führt zu potenziell unerwarteten Logikfehlern.       |
+| **R02**       | Gefahr von Desynchronisationen im Multiplayer aufgrund des deterministischen Lockstep-Modells.                |
+| **R03**       | Performance-Probleme bei großen Massenschlachten durch hohe CPU-Last (Pathfinding, Kampf, Sichtweite).        |
+| **R04**       | Abhängigkeit von älteren Technologien wie OpenGL oder SpiderMonkey kann zukünftige Wartung erschweren.        |
+| **R05**       | Fehlerhafte oder inkompatible Mods können Instabilität verursachen oder Spielabläufe stören.                  |
+| **R06**       | Große und komplexe Codebasis (C++ + JS) führt zu hoher Einarbeitungszeit für neue Entwickler.                 |
+| **R07**       | Plattformabhängige Unterschiede zwischen Windows, Linux und macOS können OS-spezifische Bugs verursachen.     |
+| **R08**       | Große Asset-Dateien führen zu langen Ladezeiten und hohem Speicherverbrauch.                                  |
+| **R09**       | KI (Petra Bot) benötigt viel CPU-Leistung, was im Spiel zu FPS-Einbrüchen führen kann.                        |
+| **R10**       | Komplexität der deterministischen Simulation macht bestimmte Bugs schwer reproduzierbar und schwer zu finden. |
 
-Zwei Arten von Szenarien finden wir besonders nützlich:
 
-- Nutzungsszenarien (auch bekannt als Anwendungs- oder
-  Anwendungsfallszenarien) beschreiben, wie das System zur Laufzeit auf
-  einen bestimmten Auslöser reagieren soll. Hierunter fallen auch
-  Szenarien zur Beschreibung von Effizienz oder Performance. Beispiel:
-  Das System beantwortet eine Benutzeranfrage innerhalb einer Sekunde.
+| **Technische Schuld** | **Beschreibung**                                     |
+| --------------------- | ---------------------------------------------------- |
+| **TS01**              | Veraltete SpiderMonkey JS-Engine → erschwert Updates |
+| **TS02**              | Viele Legacy-C++-Module ohne klare Abgrenzung        |
+| **TS03**              | Fehlende vollständige Testabdeckung                  |
+| **TS04**              | Inkompatible oder alte Assets im Modding-System      |
+| **TS05**              | Nicht vollständig dokumentierte ECS-Komponenten      |
 
-- Änderungsszenarien\_ beschreiben die gewünschte Wirkung einer Änderung
-  oder Erweiterung des Systems oder seiner unmittelbaren Umgebung.
-  Beispiel: Zusätzliche Funktionalität wird implementiert oder
-  Anforderungen an ein Qualitätsmerkmal ändern sich, und der Aufwand
-  oder die Dauer der Änderung wird gemessen.
 
-:::: formalpara
-::: title
-Form
-:::
+# Glossar 
+## 12.1 Einleitung
 
-Typische Informationen für detaillierte Szenarien sind die folgenden:
-::::
+Das folgende Glossar erklärt zentrale Begriffe aus der Spielwelt und der technischen Architektur von 0 A.D..
+Es umfasst sowohl Bezeichnungen aus dem Bereich historischer Echtzeitstrategiespiele (z. B. Einheiten, Gebäude, Ressourcen) als auch technische Konzepte aus der Engine-, Simulations- und Rendering-Architektur.
 
-In Kurzform (bevorzugt im Q42-Modell):
+Die Definitionen und Abbildungen sollen das Verständnis der Spielmechanik und der Systemarchitektur erleichtern und dienen als Nachschlagewerk für die folgenden Kapitel.
 
-- K**ontext/Hintergrund**: Um welche Art von System oder Komponente
-  handelt es sich, wie sieht die Umgebung oder Situation aus?
+### Einheitentypen
 
-- **Quelle/Stimulus**: Wer oder was initiiert oder löst ein Verhalten,
-  eine Reaktion oder eine Aktion aus.
 
-- **Metrik/Akzeptanzkriterien**: Eine Reaktion einschließlich einer
-  *Maßnahme* oder *Metrik*
 
-Die Langform von Szenarien (die von der SEI und \[Bass+21\] bevorzugt
-wird) ist detaillierter und enthält die folgenden Informationen:
 
-- **Szenario-ID**: Ein eindeutiger Bezeichner für das Szenario.
 
-- **Szenario-Name**: Ein kurzer, beschreibender Name für das Szenario.
 
-- **Quelle**: Die Entität (Benutzer, System oder Ereignis), die das
-  Szenario auslöst.
+<img src="GameImgs/Spearman.jpg" width="400">
 
-- **Stimulus**: Das auslösende Ereignis oder die Bedingung, auf die das
-  System reagieren muss.
+**Spearman** – *Nahkampfeinheit, effektiv gegen Kavallerie.*
 
-- **Umgebung**: Der betriebliche Kontext oder die Bedingungen, unter
-  denen das System den Stimulus erlebt.
 
-- **Artefakt**: Die Bausteine oder anderen Elemente des Systems, die von
-  dem Stimulus betroffen sind.
+<img src="GameImgs/Swordman.jpg" width="400">
 
-- **Reaktion**: Das Ergebnis oder Verhalten, das das System als Reaktion
-  auf den Stimulus zeigt.
+**Swordsman** – *Schwer gepanzerte Infanterie, stark im Nahkampf.*
 
-- **Antwortmaß**: Das Kriterium oder die Metrik, nach der die Antwort
-  des Systems bewertet wird.
 
-:::: formalpara
-::: title
-Beispiele
-:::
 
-Ausführliche Beispiele für Qualitätsanforderungen finden Sie auf [der
-Website zum Qualitätsmodell Q42](https://quality.arc42.org).
-::::
 
-<div>
 
-::: title
-Weitere Informationen
-:::
+<img src="GameImgs/CavalrySpearman.jpg" width="400">
 
-- Len Bass, Paul Clements, Rick Kazman: „Software Architecture in
-  Practice", 4. Auflage, Addison-Wesley, 2021.
+**Cavalry Spearman** – *Schnelle Anti-Infanterie-Einheit.*
 
-</div>
-::::::::::::
 
-# Risiken und technische Schulden {#section-technical-risks}
 
-:::::::::::: sidebar
-::: title
-:::
 
-:::: formalpara
-::: title
-Inhalt
-:::
 
-Eine nach Prioritäten geordnete Liste der erkannten Architekturrisiken
-und/oder technischen Schulden.
-::::
 
-<div>
+<img src="GameImgs/Catapult.jpg" width="400">
 
-::: title
-Motivation
-:::
+**Catapult** – *Effektiv gegen Gebäude.*
 
-> Risikomanagement ist Projektmanagement für Erwachsene.
->
-> ---  Tim Lister Atlantic Systems Guild
 
-</div>
 
-Unter diesem Motto sollten Sie Architekturrisiken und/oder technische
-Schulden gezielt ermitteln, bewerten und Ihren Management-Stakeholdern
-(z.B. Projektleitung, Product-Owner) transparent machen.
+<img src="GameImgs/Helden.jpg" width="400">
 
-:::: formalpara
-::: title
-Form
-:::
+**Hero Unit** – *Einzigartige Einheiten mit Auren und Spezialboni.*
 
-Liste oder Tabelle von Risiken und/oder technischen Schulden, eventuell
-mit vorgeschlagenen Maßnahmen zur Risikovermeidung, Risikominimierung
-oder dem Abbau der technischen Schulden.
-::::
+## Gebäudetypen
 
-:::: formalpara
-::: title
-Weiterführende Informationen
-:::
 
-Siehe [Risiken und technische
-Schulden](https://docs.arc42.org/section-11/) in der
-online-Dokumentation (auf Englisch!).
-::::
-::::::::::::
 
-# Glossar {#section-glossary}
 
-:::::::::::: sidebar
-::: title
-:::
+<img src="GameImgs/Basisgebäude.webp" width="400">
 
-:::: formalpara
-::: title
-Inhalt
-:::
+**Civic Center** – *Hauptgebäude, erzeugt Bürger und expandiert das Territorium.*
 
-Die wesentlichen fachlichen und technischen Begriffe, die Stakeholder im
-Zusammenhang mit dem System verwenden.
-::::
 
-Nutzen Sie das Glossar ebenfalls als Übersetzungsreferenz, falls Sie in
-mehrsprachigen Teams arbeiten.
+<img src="GameImgs/House.jpg" width="400">
 
-:::: formalpara
-::: title
-Motivation
-:::
+**House** – *Erhöht Bevölkerungslimit.*
 
-Sie sollten relevante Begriffe klar definieren, so dass alle Beteiligten
-::::
 
-- diese Begriffe identisch verstehen, und
 
-- vermeiden, mehrere Begriffe für die gleiche Sache zu haben.
+<img src="GameImgs/Barracks.jpg" width="400">
 
-:::: formalpara
-::: title
-Form
-:::
+**Barracks** – *Rekrutiert Infanterie.*
 
-Zweispaltige Tabelle mit \<Begriff\> und \<Definition\>.
-::::
 
-Eventuell weitere Spalten mit Übersetzungen, falls notwendig.
+<img src="GameImgs/Fortress.jpg" width="400">
 
-:::: formalpara
-::: title
-Weiterführende Informationen
-:::
+**Fortress** – *Starkes Verteidigungsgebäude, erzeugt Elite-Einheiten.*
 
-Siehe [Glossar](https://docs.arc42.org/section-12/) in der
-online-Dokumentation (auf Englisch!).
-::::
-::::::::::::
 
-+----------------------+-----------------------------------------------+
-| Begriff              | Definition                                    |
-+======================+===============================================+
-| *\<Begriff-1\>*      | *\<Definition-1\>*                            |
-+----------------------+-----------------------------------------------+
-| *\<Begriff-2*        | *\<Definition-2\>*                            |
-+----------------------+-----------------------------------------------+
+## Ressourcen
+
+Nahrung
+
+<img src="GameImgs/Nahrung.jpg" width="400">
+
+Gesammelt durch Felder, Beeren, Tiere.
+
+<img src="GameImgs/Stein.jpg" width="400">
+Benötigt für Mauern, Festungen.
+
+
+## 12.2 Begriffe
+
+| **Begriff**                        | **Definition**                                                                                                                                               |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **0 A.D.**                         | Open-Source-Echtzeitstrategiespiel, entwickelt von Wildfire Games. Ähnelt Age of Empires, aber ist vollständig modbar und community-getrieben.               |
+| **Engine Core**                    | Zentrales Steuersystem der Engine. Verwaltet Hauptspielschleife, Ereignisse, Ressourcen, Timing und Kommunikation zwischen Subsystemen.                      |
+| **ECS (Entity-Component-System)**  | Architekturmodell, das Spielobjekte (Entities) in reine Daten (Components) und Logikmodule (Systems) aufteilt. Garantiert hohe Performance und Flexibilität. |
+| **Entity (Entität)**               | Ein Spielobjekt im ECS-System, z. B. Einheit, Gebäude, Projektil. Besteht aus einer Sammlung von Komponenten.                                                |
+| **Component (Komponente)**         | Reiner Datenbehälter, der eine bestimmte Eigenschaft einer Entity beschreibt, z. B. Position, Gesundheit, Angriffswerte.                                     |
+| **System**                         | Logikmodul, das auf bestimmte Komponenten angewendet wird. Beispiele: MovementSystem, CombatSystem, ProductionSystem.                                        |
+| **Simulation Tick**                | Ein Logik-Update-Schritt der Simulation, in dem Commands verarbeitet und der Spielzustand aktualisiert wird.                                                 |
+| **Lockstep-Modell**                | Multiplayer-Synchronisationsmethode, bei der alle Clients dieselben Befehle verarbeiten und so einen identischen Spielzustand garantieren.                   |
+| **Desync (Desynchronisation)**     | Zustand, in dem Multiplayer-Clients unterschiedliche Simulationsergebnisse berechnen und das Spiel inkonsistent wird.                                        |
+| **Rendering Subsystem**            | Subsystem zur visuellen Darstellung der Spielwelt (OpenGL-basiert). Rendert Terrain, Einheiten, Objekte, Effekte.                                            |
+| **Audio Subsystem**                | Subsystem für Soundeffekte und Musik. Nutzt OpenAL für 3D-Audio.                                                                                             |
+| **GUI (Graphical User Interface)** | Benutzeroberfläche des Spiels: Menüs, HUD, Panels, Tooltips, Minimap. Basierend auf XML + JavaScript.                                                        |
+| **Mod / Modding**                  | Vom Benutzer erstellte Inhalte (Einheiten, Zivilisationen, Karten, Regeln, Skripte). In *0 A.D.* über XML/JSON + JS definiert.                               |
+| **Template**                       | XML-Datei, die Eigenschaften einer Einheit, eines Gebäudes oder Objekts beschreibt. Datengetriebener Ansatz.                                                 |
+| **Replay**                         | Aufzeichnung eines vollständigen Spiels in Form von Befehlslisten zur späteren Wiedergabe oder Fehlersuche.                                                  |
+| **Atlas Editor**                   | Offizieller Karten- und Szenarieneditor von *0 A.D.*. Ermöglicht das Erstellen von Maps ohne Programmierkenntnisse.                                          |
+| **Scripting API**                  | Schnittstelle zwischen JavaScript und Engine Core. Ermöglicht Zugriff auf Engine-Funktionen (Commands, Daten, GUI).                                          |
+| **OpenGL**                         | Cross-Plattform-Grafik-API, die für das Rendering in *0 A.D.* verwendet wird.                                                                                |
+| **OpenAL**                         | Cross-Plattform-Audio-API zur Wiedergabe von 3D-Sound.                                                                                                       |
+| **ENet**                           | Netzwerkbibliothek für zuverlässige UDP-Kommunikation, welche für Multiplayer verwendet wird.                                                                |
+| **Pathfinding**                    | Algorithmus zur Berechnung von Einheitenbewegungen zum Zielpunkt. In *0 A.D.* oft ein Performance-Bottleneck.                                                |
+| **LOD (Level of Detail)**          | Technik zur Darstellung von entfernten Objekten mit geringerer Detailtiefe, um Performance zu verbessern.                                                    |
+| **Sandboxing**                     | Sicherheitsmechanismus, der verhindert, dass modifizierte Scripts das System beschädigen können.                                                             |
+| **Tickrate**                       | Frequenz, mit der die Simulation pro Sekunde aktualisiert wird.                                                                                              |
+| **HUD (Heads-Up Display)**         | In-Game-Benutzeroberfläche, die Ressourcen, Einheiteninfos und Minimap anzeigt.                                                                              |
