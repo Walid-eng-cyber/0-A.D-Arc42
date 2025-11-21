@@ -9,3 +9,9 @@
 - **Modding Friendliness** https://trac.wildfiregames.com/wiki/Modding_Guide?utm_source=chatgpt.com
 
 - **Engine Functions** : https://gitea.wildfiregames.com/0ad/0ad/wiki/EngineFunctions
+
+
+
+**sonstige** :
+
+- **pages** : https://gitea.wildfiregames.com/0ad/0ad/wiki/?action=_pages
